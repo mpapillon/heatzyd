@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{% block title %}heatzyd{% endblock %}</title>
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        <header>
+            <a href="/">heatzyd</a>
+            <nav>{% block nav %}{% endblock %}</nav>
+        </header>
+
+        {% block toasts %}{% endblock %}
+
+        <main>{% block content %}{% endblock %}</main>
+    </body>
+</html>
