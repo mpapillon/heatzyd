@@ -3,17 +3,16 @@ from typing import Annotated
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from heatzypy import AuthenticationFailed, HeatzyException
 
 from app.deps import AppContextDep, SessionDep
 from app.models import credentials
+from app.templating import templates
 
 logger = logging.getLogger(__name__)
 
 
 router = APIRouter(tags=["auth"])
-templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/login", response_class=HTMLResponse)

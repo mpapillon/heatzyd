@@ -1,0 +1,42 @@
+.icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-xs {
+  width: 0.75em;
+  height: 0.75em;
+  stroke-width: 2.75;
+}
+
+.icon-sm {
+  width: 0.875em;
+  height: 0.875em;
+  stroke-width: 2.25;
+}
+
+.icon-lg {
+  width: 1.25em;
+  height: 1.25em;
+  stroke-width: 1.75;
+}
+
+.icon-xl {
+  width: 1.5em;
+  height: 1.5em;
+  stroke-width: 1.75;
+}
+
+.icon-xxl {
+  width: 2em;
+  height: 2em;
+  stroke-width: 1.5;
+}

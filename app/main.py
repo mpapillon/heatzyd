@@ -3,6 +3,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.deps import AppContext
@@ -31,6 +32,7 @@ def create_app() -> FastAPI:
         format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
     )
     app = FastAPI(title="heatzyd", lifespan=lifespan)
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.include_router(auth.router)
     return app
 
