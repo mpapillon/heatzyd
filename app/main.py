@@ -9,7 +9,7 @@ from app.config import settings
 from app.deps import AppContext
 from app.heatzy import HeatzyService
 from app.models.db import init_db
-from app.routers import auth
+from app.routers import auth, dashboard
 
 
 @asynccontextmanager
@@ -34,6 +34,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="heatzyd", lifespan=lifespan)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.include_router(auth.router)
+    app.include_router(dashboard.router)
     return app
 
 

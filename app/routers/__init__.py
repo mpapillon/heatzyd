@@ -1,1 +1,1 @@
-from app.routers import auth  # noqa: F401
+from app.routers import auth, dashboard  # noqa: F401

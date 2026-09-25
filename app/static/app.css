@@ -112,3 +112,7 @@
     animation: none;
   }
 }
+
+.device-meta {
+  min-width: 0;
+}
