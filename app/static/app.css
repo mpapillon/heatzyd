@@ -40,3 +40,75 @@
   height: 2em;
   stroke-width: 1.5;
 }
+
+.mode-icon {
+  --mode-icon-size: 2.5rem;
+  --mode-icon-glyph: 0.58;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--mode-icon-size);
+  height: var(--mode-icon-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background-color: var(--mode-tint, var(--bs-secondary));
+  background-image: var(--bs-gradient);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mode-icon[data-mode="cft"] {
+  --mode-tint: var(--bs-red);
+}
+
+.mode-icon[data-mode="cft1"],
+.mode-icon[data-mode="cft2"] {
+  --mode-tint: var(--bs-orange);
+}
+
+.mode-icon[data-mode="eco"] {
+  --mode-tint: var(--bs-teal);
+}
+
+.mode-icon[data-mode="fro"] {
+  --mode-tint: var(--bs-blue);
+}
+
+.mode-icon[data-mode="stop"] {
+  --mode-tint: var(--bs-gray);
+}
+
+.mode-icon .icon {
+  width: calc(var(--mode-icon-size) * var(--mode-icon-glyph));
+  height: calc(var(--mode-icon-size) * var(--mode-icon-glyph));
+  stroke-width: 1.75;
+  animation: mode-icon-swap 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mode-icon:active {
+  transform: scale(0.8);
+}
+
+@keyframes mode-icon-swap {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-icon,
+  .mode-icon .icon {
+    transition: none;
+    animation: none;
+  }
+}

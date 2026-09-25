@@ -21,6 +21,15 @@ _MODE_ICONS: dict[Mode, str] = {
     Mode.OFF: "power",
 }
 
+_MODE_LABELS: dict[Mode, str] = {
+    Mode.CONFORT: "Confort",
+    Mode.CONFORT_M1: "Confort -1°C",
+    Mode.CONFORT_M2: "Confort -2°C",
+    Mode.ECO: "Éco",
+    Mode.HORS_GEL: "Hors-gel",
+    Mode.OFF: "Éteint",
+}
+
 
 class UnknownIconError(ValueError):
     pass
@@ -80,12 +89,22 @@ def mode_icon_name(mode: Mode | None) -> str:
     return _MODE_ICONS[mode]
 
 
+def mode_value(mode: Mode | None) -> str:
+    return mode.value if mode else ""
+
+
+def mode_label(mode: Mode | None) -> str:
+    if mode is None:
+        return "Inconnu"
+    return _MODE_LABELS.get(mode, "Inconnu")
+
+
 def mode_icon(
     mode: Mode | None,
     cls: str = "",
 ) -> Markup:
     name = mode_icon_name(mode)
-    return icon(name, cls=cls, title=name)
+    return icon(name, cls=cls, title=mode_label(mode))
 
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -95,4 +114,6 @@ templates.env.globals.update(
     icon_names=icon_names,
     mode_icon=mode_icon,
     mode_icon_name=mode_icon_name,
+    mode_label=mode_label,
+    mode_value=mode_value,
 )
