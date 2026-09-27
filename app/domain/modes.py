@@ -8,3 +8,6 @@ class Mode(str, Enum):
     ECO = "eco"
     HORS_GEL = "fro"
     OFF = "stop"
+
+    # Non-standard modes
+    OFFLINE = "offline"

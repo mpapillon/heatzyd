@@ -6,8 +6,8 @@ from aiohttp import ClientSession
 from heatzypy import AuthenticationFailed, HeatzyClient, HeatzyException
 
 from app.config import Settings
-from app.domain.protocol import parse_bool, parse_mode
 from app.heatzy.device import DeviceState
+from app.heatzy.events import EventEmitter
 from app.models.credentials import load, mark_disconnected
 from app.models.db import session_scope
 
@@ -15,9 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 class HeatzyService:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, events: EventEmitter):
         self.auth_error: str | None = None
 
+        self._events = events
         self._region = settings.heatzy_region
         self._use_tls = settings.use_tls
 
@@ -51,7 +52,7 @@ class HeatzyService:
         try:
             self._client.websocket.register_callback(self._callback)
             await self._client.websocket.async_connect(
-                auto_subscribe=True, all_devices=True
+                auto_subscribe=True, all_devices=False
             )
             self._listen_task = asyncio.create_task(
                 self._client.websocket.async_listen()
@@ -93,12 +94,21 @@ class HeatzyService:
             await self._client.async_close()
             self._client = None
 
-    def _callback(self, devices: dict[str, Any]) -> None:
-        for device in devices.values():
-            dev_alias = device.get("dev_alias")
-            attrs = device.get("attrs", {})
-            mode = parse_mode(attrs.get("mode"))
-            lock = parse_bool(attrs.get("lock_switch"))
+    def get_device(self, did: str) -> DeviceState | None:
+        for device in self.devices:
+            if device.did == did:
+                return device
+        return None
 
-            logger.info("Device: %s, mode: %s, lock: %s", dev_alias, mode, lock)
-        logger.info("---------------------------------------")
+    def _callback(self, device: dict[str, Any]) -> None:
+        did = device.get("did")
+        if did is None:
+            return
+
+        def on_done(task: asyncio.Task[None]) -> None:
+            if (exc := task.exception()) is not None:
+                logger.error("device_changed event failed for %s: %s", did, exc)
+
+        asyncio.get_running_loop().create_task(
+            self._events.emit("device_changed", did)
+        ).add_done_callback(on_done)

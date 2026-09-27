@@ -1,0 +1,16 @@
+<div class="card shadow-sm h-100" id="dev-{{ device.did }}"
+    hx-get="/devices/{{ device.did }}/card"
+    hx-trigger="device_changed@{{ device.did }} from:body"
+    hx-swap="outerHTML">
+    <div class="card-body d-flex align-items-center gap-3">
+        <button type="button" class="mode-icon"
+                data-mode="{{ mode_value(device.mode) }}"
+                aria-label="{{ mode_label(device.mode) }}">
+            {{ mode_icon(device.mode) }}
+        </button>
+        <div class="device-meta flex-grow-1">
+            <div class="dev-alias fw-semibold text-truncate">{{ device.dev_alias or "Sans nom" }}</div>
+            <div class="text-body-secondary small text-truncate">{{ mode_label(device.mode) }}</div>
+        </div>
+    </div>
+</div>

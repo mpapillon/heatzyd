@@ -8,18 +8,20 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.deps import AppContext
 from app.heatzy import HeatzyService
+from app.heatzy.events import EventEmitter
 from app.models.db import init_db
-from app.routers import auth, dashboard
+from app.routers import auth, devices, events_sse, pages
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     init_db(settings.database_path)
 
-    service = HeatzyService(settings=settings)
+    events = EventEmitter()
+    service = HeatzyService(settings=settings, events=events)
     await service.start()
 
-    app.state.ctx = AppContext(settings=settings, service=service)
+    app.state.ctx = AppContext(settings=settings, service=service, events=events)
     try:
         yield
     finally:
@@ -34,7 +36,9 @@ def create_app() -> FastAPI:
     app = FastAPI(title="heatzyd", lifespan=lifespan)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.include_router(auth.router)
-    app.include_router(dashboard.router)
+    app.include_router(devices.router)
+    app.include_router(events_sse.router)
+    app.include_router(pages.router)
     return app
 
 

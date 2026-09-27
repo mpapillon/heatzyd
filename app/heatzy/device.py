@@ -26,7 +26,13 @@ class DeviceState:
         return self.raw_device.get("product_name", "")
 
     @property
+    def is_online(self) -> bool:
+        return parse_bool(self.raw_device.get("is_online"))
+
+    @property
     def mode(self) -> Mode | None:
+        if not self.is_online:
+            return Mode.OFFLINE
         return parse_mode(self._attrs.get("mode"))
 
     @property

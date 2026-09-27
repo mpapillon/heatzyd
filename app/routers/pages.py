@@ -9,7 +9,7 @@ from app.templating import templates
 logger = logging.getLogger(__name__)
 
 
-router = APIRouter(tags=["dashboard"])
+router = APIRouter(tags=["pages"])
 
 @router.get("/", response_class=HTMLResponse)
 def dashboard_page(request: Request, ctx: AppContextDep):

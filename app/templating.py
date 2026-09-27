@@ -19,6 +19,7 @@ _MODE_ICONS: dict[Mode, str] = {
     Mode.ECO: "moon",
     Mode.HORS_GEL: "frost",
     Mode.OFF: "power",
+    Mode.OFFLINE: "wifi-off",
 }
 
 _MODE_LABELS: dict[Mode, str] = {
@@ -28,6 +29,7 @@ _MODE_LABELS: dict[Mode, str] = {
     Mode.ECO: "Éco",
     Mode.HORS_GEL: "Hors-gel",
     Mode.OFF: "Éteint",
+    Mode.OFFLINE: "Déconnecté",
 }
 
 

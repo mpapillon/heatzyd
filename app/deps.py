@@ -8,6 +8,7 @@ from sqlmodel import Session
 
 from app.config import Settings
 from app.heatzy import HeatzyService
+from app.heatzy.events import EventEmitter
 from app.models.db import get_engine
 
 
@@ -23,6 +24,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 class AppContext:
     settings: Settings
     service: HeatzyService
+    events: EventEmitter
 
 
 def get_context(request: Request) -> AppContext:
