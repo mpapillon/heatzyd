@@ -11,3 +11,6 @@ class Mode(str, Enum):
 
     # Non-standard modes
     OFFLINE = "offline"
+
+
+NON_COMMANDABLE_MODES: frozenset[Mode] = frozenset({Mode.OFFLINE})

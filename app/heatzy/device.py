@@ -26,6 +26,10 @@ class DeviceState:
         return self.raw_device.get("product_name", "")
 
     @property
+    def product_key(self) -> str:
+        return self.raw_device.get("product_key", "")
+
+    @property
     def is_online(self) -> bool:
         return parse_bool(self.raw_device.get("is_online"))
 

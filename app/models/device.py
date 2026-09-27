@@ -5,5 +5,6 @@ class DeviceMeta(SQLModel, table=True):
     did: str = Field(primary_key=True)
     name: str = Field()
     product_name: str = Field()
+    product_key: str = Field()
     lock_switch: bool = Field()
     program_enabled: bool = Field()

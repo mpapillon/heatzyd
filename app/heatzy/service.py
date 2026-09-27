@@ -6,10 +6,16 @@ from aiohttp import ClientError, ClientSession
 from heatzypy import AuthenticationFailed, HeatzyClient, HeatzyException
 
 from app.config import Settings
+from app.domain.capabilities import capabilities_for
 from app.domain.modes import Mode
 from app.domain.protocol import encode_order
 from app.heatzy.device import DeviceState
-from app.heatzy.errors import NotConnected, OrderFailed
+from app.heatzy.errors import (
+    DeviceNotFound,
+    DeviceNotSupported,
+    NotConnected,
+    OrderFailed,
+)
 from app.heatzy.events import EventEmitter
 from app.models.credentials import load, mark_disconnected
 from app.models.db import session_scope
@@ -106,8 +112,14 @@ class HeatzyService:
     async def send_order(self, did: str, order: Mode) -> None:
         if self._client is None or not self.is_connected:
             raise NotConnected
+        if (device := self.get_device(did)) is None:
+            raise DeviceNotFound(did)
+        if (capabilities := capabilities_for(device.product_key)) is None:
+            raise DeviceNotSupported(did)
         try:
-            await self._client.websocket.async_control_device(did, encode_order(order))
+            await self._client.websocket.async_control_device(
+                did, encode_order(capabilities, order)
+            )
         except (HeatzyException, ClientError) as error:
             raise OrderFailed(str(error)) from error
 

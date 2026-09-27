@@ -1,0 +1,2 @@
+class ModeNotSupported(Exception):
+    pass
