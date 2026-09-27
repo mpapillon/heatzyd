@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.domain.modes import Mode
-from app.domain.protocol import parse_bool, parse_mode
+from app.domain.protocol import extract_mode, parse_bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,7 +33,7 @@ class DeviceState:
     def mode(self) -> Mode | None:
         if not self.is_online:
             return Mode.OFFLINE
-        return parse_mode(self._attrs.get("mode"))
+        return extract_mode(self._attrs)
 
     @property
     def lock(self) -> bool:

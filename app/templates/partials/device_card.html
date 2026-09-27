@@ -4,12 +4,17 @@
     hx-swap="outerHTML">
     <div class="card-body d-flex align-items-center gap-3">
         <button type="button" class="mode-icon"
+                hx-post="/devices/{{ device.did }}/order"
+                hx-vals='{"mode": "{{ mode_value(device.quick_switch) }}"}'
+                hx-swap="none"
+                hx-disable="this"
                 data-mode="{{ mode_value(device.mode) }}"
-                aria-label="{{ mode_label(device.mode) }}">
+                aria-label="{% if device.quick_switch %}Passer en {{ mode_label(device.quick_switch) }}{% else %}{{ mode_label(device.mode) }}{% endif %}"
+                {% if not device.quick_switch %}disabled{% endif %}>
             {{ mode_icon(device.mode) }}
         </button>
         <div class="device-meta flex-grow-1">
-            <div class="dev-alias fw-semibold text-truncate">{{ device.dev_alias or "Sans nom" }}</div>
+            <div class="dev-alias fw-semibold text-truncate">{{ device.alias }}</div>
             <div class="text-body-secondary small text-truncate">{{ mode_label(device.mode) }}</div>
         </div>
     </div>

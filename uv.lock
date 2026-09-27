@@ -315,6 +315,7 @@ dependencies = [
     { name = "heatzypy" },
     { name = "jinja2" },
     { name = "pydantic-settings" },
+    { name = "python-multipart" },
     { name = "sqlmodel" },
 ]
 
@@ -324,6 +325,7 @@ requires-dist = [
     { name = "heatzypy", specifier = ">=2.6.1" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pydantic-settings", specifier = ">=2.15.0" },
+    { name = "python-multipart", specifier = ">=0.0.32" },
     { name = "sqlmodel", specifier = ">=0.0.42" },
 ]
 

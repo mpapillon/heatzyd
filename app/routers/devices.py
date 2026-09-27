@@ -1,10 +1,15 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, Response
 
 from app.deps import AppContextDep
+from app.domain.modes import Mode
+from app.domain.protocol import NON_COMMANDABLE_MODES
+from app.heatzy.errors import NotConnected, OrderFailed
 from app.templating import templates
+from app.viewmodels import DeviceCardVM
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +26,35 @@ async def device_card(
     if not ctx.service.is_connected:
         return Response(status_code=200, headers={"HX-Redirect": "/login"})
     device = ctx.service.get_device(did)
+
+    if device is None:
+        return Response(status_code=404)
+
     return templates.TemplateResponse(
-        request, "partials/device_card.html", {"device": device}
+        request,
+        "partials/device_card.html",
+        {"device": DeviceCardVM.from_state(device)},
     )
+
+
+@router.post("/devices/{did}/order")
+async def device_order(
+    ctx: AppContextDep,
+    did: str,
+    mode: Annotated[Mode, Form()],
+):
+    if not ctx.service.is_connected:
+        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    if ctx.service.get_device(did) is None:
+        return Response(status_code=404)
+    if mode in NON_COMMANDABLE_MODES:
+        return Response(status_code=400)
+
+    try:
+        await ctx.service.send_order(did, mode)
+    except NotConnected:
+        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    except OrderFailed:
+        return Response(status_code=502)
+
+    return Response(status_code=204)

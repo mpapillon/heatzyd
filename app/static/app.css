@@ -94,6 +94,15 @@
   transform: scale(0.8);
 }
 
+.mode-icon:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.mode-icon:disabled:active {
+  transform: none;
+}
+
 @keyframes mode-icon-swap {
   from {
     opacity: 0;
@@ -107,7 +116,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mode-icon,
-  .mode-icon .icon {
+  .mode-icon .icon,
+  .mode-icon.htmx-request {
     transition: none;
     animation: none;
   }
