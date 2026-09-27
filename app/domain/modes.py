@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class Mode(str, Enum):
+class Mode(StrEnum):
     CONFORT = "cft"
     CONFORT_M1 = "cft1"
     CONFORT_M2 = "cft2"

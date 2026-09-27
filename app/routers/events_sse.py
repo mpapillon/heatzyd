@@ -8,6 +8,7 @@ from app.deps import AppContextDep
 
 router = APIRouter(tags=["events"])
 
+
 @router.get("/events", response_class=EventSourceResponse)
 async def sse_events(ctx: AppContextDep) -> AsyncIterable[ServerSentEvent]:
     queue: asyncio.Queue[str] = asyncio.Queue()

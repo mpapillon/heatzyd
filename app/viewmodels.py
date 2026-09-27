@@ -25,7 +25,7 @@ class DeviceCardVM:
     @classmethod
     def from_state(
         cls, device: DeviceState, capabilities: ProductCapabilities | None
-    ) -> "DeviceCardVM":
+    ) -> DeviceCardVM:
         return cls(
             did=device.did,
             alias=device.dev_alias or "Sans nom",
