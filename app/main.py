@@ -9,6 +9,7 @@ from app.config import settings
 from app.deps import AppContext
 from app.heatzy import HeatzyService
 from app.heatzy.events import EventEmitter
+from app.middlewares import IsConnectedMiddleware
 from app.models.db import init_db
 from app.routers import auth, devices, events_sse, pages
 
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
     )
     app = FastAPI(title="heatzyd", lifespan=lifespan)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
+    app.add_middleware(IsConnectedMiddleware)
     app.include_router(auth.router)
     app.include_router(devices.router)
     app.include_router(events_sse.router)

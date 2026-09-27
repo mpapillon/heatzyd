@@ -29,10 +29,7 @@ async def device_card(
     ctx: AppContextDep,
     did: str,
 ):
-    if not ctx.service.is_connected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
     device = ctx.service.get_device(did)
-
     if device is None:
         return Response(status_code=404)
 
@@ -50,8 +47,6 @@ async def device_order(
     did: str,
     mode: Annotated[Mode, Form()],
 ):
-    if not ctx.service.is_connected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
     try:
         await ctx.service.send_order(did, mode)
     except NotConnected:
