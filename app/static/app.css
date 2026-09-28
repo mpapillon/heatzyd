@@ -134,3 +134,8 @@
 .device-meta {
   min-width: 0;
 }
+
+.dropdown-item.form-switch:not(.disabled),
+.dropdown-item.form-switch:not(.disabled) input {
+  cursor: pointer;
+}

@@ -6,13 +6,13 @@ from fastapi.responses import HTMLResponse, Response
 
 from app.deps import AppContextDep
 from app.domain.capabilities import capabilities_for
-from app.domain.errors import ModeNotSupported
+from app.domain.errors import LockNotSupported, ModeNotSupported
 from app.domain.modes import Mode
 from app.heatzy.errors import (
+    ControlFailed,
     DeviceNotFound,
     DeviceNotSupported,
     NotConnected,
-    OrderFailed,
 )
 from app.templating import templates
 from app.viewmodels import DeviceCardVM
@@ -57,7 +57,25 @@ async def device_order(
         return Response(status_code=409)
     except ModeNotSupported:
         return Response(status_code=400)
-    except OrderFailed:
+    except ControlFailed:
+        return Response(status_code=502)
+
+    return Response(status_code=204)
+
+
+@router.put("/devices/{did}/lock")
+async def device_lock(ctx: AppContextDep, did: str, lock: Annotated[bool, Form()]):
+    try:
+        await ctx.service.send_lock(did, lock)
+    except NotConnected:
+        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    except DeviceNotFound:
+        return Response(status_code=404)
+    except DeviceNotSupported:
+        return Response(status_code=409)
+    except LockNotSupported:
+        return Response(status_code=400)
+    except ControlFailed:
         return Response(status_code=502)
 
     return Response(status_code=204)

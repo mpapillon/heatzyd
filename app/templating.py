@@ -37,10 +37,6 @@ class UnknownIconError(ValueError):
     pass
 
 
-class UnknownIconSizeError(ValueError):
-    pass
-
-
 @lru_cache(maxsize=1)
 def _sprite_source() -> str:
     return SPRITE_PATH.read_text(encoding="utf-8")

@@ -44,12 +44,16 @@
             <li><h6 class="dropdown-header">Appareil</h6></li>
             {% if device.capabilities.lock %}
             <li>
-                <label class="dropdown-item disabled form-switch d-flex align-items-center gap-3"
-                       for="lock-{{ device.did }}" aria-disabled="true">
+                <label class="dropdown-item form-switch d-flex align-items-center gap-3{% if not device.is_online %} disabled{% endif %}"
+                       for="lock-{{ device.did }}" {% if not device.is_online %} aria-disabled="true"{% endif %}>
                     <span class="flex-grow-1">Verrou</span>
                     <input class="form-check-input me-0" type="checkbox" role="switch"
                            id="lock-{{ device.did }}"{% if device.lock %} checked{% endif %}
-                           disabled>
+                           hx-put="/devices/{{ device.did }}/lock"
+                           hx-vals='{"lock": "{{ 0 if device.lock else 1 }}"}'
+                           hx-trigger="click prevent"
+                           hx-swap="none"
+                           hx-disable="this"{% if not device.is_online %} disabled{% endif %}>
                 </label>
             </li>
             {% endif %}

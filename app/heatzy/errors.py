@@ -14,5 +14,5 @@ class NotConnected(HeatzyError):
     pass
 
 
-class OrderFailed(HeatzyError):
+class ControlFailed(HeatzyError):
     pass

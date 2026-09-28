@@ -6,15 +6,15 @@ from aiohttp import ClientError, ClientSession
 from heatzypy import AuthenticationFailed, HeatzyClient, HeatzyException
 
 from app.config import Settings
-from app.domain.capabilities import capabilities_for
+from app.domain.capabilities import ProductCapabilities, capabilities_for
 from app.domain.modes import Mode
-from app.domain.protocol import encode_order
+from app.domain.protocol import encode_lock, encode_order
 from app.heatzy.device import DeviceState
 from app.heatzy.errors import (
+    ControlFailed,
     DeviceNotFound,
     DeviceNotSupported,
     NotConnected,
-    OrderFailed,
 )
 from app.heatzy.events import EventEmitter
 from app.models.credentials import load, mark_disconnected
@@ -109,19 +109,11 @@ class HeatzyService:
                 return device
         return None
 
-    async def send_order(self, did: str, order: Mode) -> None:
-        if self._client is None or not self.is_connected:
-            raise NotConnected
-        if (device := self.get_device(did)) is None:
-            raise DeviceNotFound(did)
-        if (capabilities := capabilities_for(device.product_key)) is None:
-            raise DeviceNotSupported(did)
-        try:
-            await self._client.websocket.async_control_device(
-                did, encode_order(capabilities, order)
-            )
-        except (HeatzyException, ClientError) as error:
-            raise OrderFailed(str(error)) from error
+    async def send_order(self, did: str, mode: Mode) -> None:
+        await self._send(did, encode_order(self._capabilities_or_raise(did), mode))
+
+    async def send_lock(self, did: str, lock: bool) -> None:
+        await self._send(did, encode_lock(self._capabilities_or_raise(did), lock))
 
     def _callback(self, device: dict[str, Any]) -> None:
         did = device.get("did")
@@ -135,3 +127,21 @@ class HeatzyService:
         asyncio.get_running_loop().create_task(
             self._events.emit("device_changed", did)
         ).add_done_callback(on_done)
+
+    def _capabilities_or_raise(self, did: str) -> ProductCapabilities:
+        if self._client is None or not self.is_connected:
+            raise NotConnected
+        device = self.get_device(did)
+        if device is None:
+            raise DeviceNotFound(did)
+        if (capabilities := capabilities_for(device.product_key)) is None:
+            raise DeviceNotSupported(did)
+        return capabilities
+
+    async def _send(self, did: str, payload: dict[str, Any]) -> None:
+        if self._client is None or not self.is_connected:
+            raise NotConnected
+        try:
+            await self._client.websocket.async_control_device(did, payload)
+        except (HeatzyException, ClientError) as error:
+            raise ControlFailed(str(error)) from error
