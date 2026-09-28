@@ -1,7 +1,8 @@
-<div class="card h-100" id="dev-{{ device.did }}"
+<div class="card device-card h-100" id="dev-{{ device.did }}"
+    data-mode="{{ mode_value(device.mode) }}"
     hx-get="/devices/{{ device.did }}/card"
     hx-trigger="device_changed@{{ device.did }} from:body"
-    hx-swap="outerHTML">
+    hx-swap="outerMorph">
     <div class="card-body d-flex align-items-center gap-3">
         <button type="button" class="mode-icon-btn"
                 hx-post="/devices/{{ device.did }}/order"
@@ -14,7 +15,8 @@
             {{ mode_icon(device.mode) }}
         </button>
         <div class="device-meta flex-grow-1">
-            <div class="dev-alias fw-semibold text-truncate">{{ device.alias }}</div>
+            <a class="dev-alias d-block fw-semibold text-truncate stretched-link text-reset text-decoration-none"
+               href="/devices/{{ device.did }}">{{ device.alias }}</a>
             <div class="text-body-secondary small text-truncate">{{ mode_label(device.mode) }}</div>
         </div>
         <div class="dropdown d-none d-md-block">

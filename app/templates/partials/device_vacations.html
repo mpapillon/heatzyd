@@ -1,0 +1,20 @@
+<button class="btn btn-link p-0 w-100 d-flex align-items-center gap-3 collapsed text-reset text-decoration-none"
+        type="button" data-bs-toggle="collapse" data-bs-target="#edit-vac"
+        aria-expanded="false" aria-controls="edit-vac" disabled>
+  <span class="setting-icon setting-icon--vacation">{{ icon('briefcase') }}</span>
+  <span class="flex-grow-1 text-start">
+    <span class="d-block">Mode vacances</span>
+    <small class="text-body-secondary d-block">Hors-gel jusqu'à la date de retour.</small>
+  </span>
+  <span class="text-body-secondary small">Indisponible</span>
+  {{ icon('chevron-down', cls='collapse-chevron') }}
+</button>
+<div id="edit-vac" class="collapse">
+  <div class="pt-3">
+    <div class="d-flex flex-column flex-sm-row gap-2">
+      <label class="visually-hidden" for="vac-{{ device.did }}">Date de retour</label>
+      <input type="date" class="form-control" id="vac-{{ device.did }}" value="2026-08-15" disabled>
+      <button class="btn btn-primary flex-shrink-0" type="button" disabled>Activer</button>
+    </div>
+  </div>
+</div>

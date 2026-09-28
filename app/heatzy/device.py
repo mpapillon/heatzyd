@@ -26,6 +26,10 @@ class DeviceState:
         return self.raw_device.get("product_name", "")
 
     @property
+    def mac(self) -> str:
+        return self.raw_device.get("mac", "")
+
+    @property
     def product_key(self) -> str:
         return self.raw_device.get("product_key", "")
 

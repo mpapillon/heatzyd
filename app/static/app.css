@@ -139,3 +139,127 @@
 .dropdown-item.form-switch:not(.disabled) input {
   cursor: pointer;
 }
+
+.device-card {
+  position: relative;
+  z-index: 0;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+.device-card:has(.dropdown-menu.show) {
+  z-index: 1;
+}
+.device-card:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--mode-tint, var(--bs-secondary)) 8%,
+    var(--bs-card-bg, var(--bs-body-bg))
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--mode-tint, var(--bs-secondary)) 45%,
+    var(--bs-border-color)
+  );
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.device-card:has(.stretched-link:focus-visible) {
+  --bs-focus-ring-color: color-mix(
+    in srgb,
+    var(--mode-tint, var(--bs-secondary)) 25%,
+    transparent
+  );
+  background-color: color-mix(
+    in srgb,
+    var(--mode-tint, var(--bs-secondary)) 12%,
+    var(--bs-card-bg, var(--bs-body-bg))
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--mode-tint, var(--bs-secondary)) 60%,
+    var(--bs-border-color)
+  );
+  box-shadow: 0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color);
+}
+.device-card .stretched-link:focus-visible {
+  outline: none;
+}
+
+.device-card .mode-icon-btn {
+  position: relative;
+  z-index: 2;
+}
+
+.device-card .dropdown {
+  position: relative;
+  z-index: 3;
+}
+
+.setting-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background-color: color-mix(in srgb, var(--setting-tint, var(--bs-secondary-color)) 14%, var(--bs-body-bg));
+  color: color-mix(in srgb, var(--setting-tint, var(--bs-secondary-color)) 72%, var(--bs-body-color));
+}
+.setting-icon--lock {
+  --setting-tint: var(--bs-yellow);
+}
+.setting-icon--vacation {
+  --setting-tint: var(--bs-blue);
+}
+.setting-icon--program {
+  --setting-tint: var(--bs-green);
+}
+.setting-icon .icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.collapse-chevron {
+  transition: transform 0.15s ease;
+}
+[aria-expanded="true"] .collapse-chevron {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .collapse-chevron {
+    transition: none;
+  }
+}
+
+.setting-spacer {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+}
+.setting-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.25rem -1rem 0;
+  padding: 0.5rem 1rem 0 1rem;
+  color: var(--bs-link-color);
+  text-decoration: none;
+}
+.setting-link:hover {
+  text-decoration: underline;
+}
+
+label:has(.form-check-input),
+label .form-check-input {
+    cursor: pointer;
+}
+
+label:has(.form-check-input:disabled) {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+label:has(.form-check-input:disabled) .form-check-input {
+  opacity: inherit;
+}

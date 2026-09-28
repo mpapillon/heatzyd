@@ -6,13 +6,15 @@ from app.heatzy.device import DeviceState
 
 
 @dataclass(frozen=True, slots=True)
-class DeviceCardVM:
+class DeviceVM:
     did: str
     alias: str
     capabilities: ProductCapabilities | None
     is_online: bool
     lock: bool
     mode: Mode | None
+    model: str
+    serial: str
 
     @property
     def quick_switch(self) -> Mode | None:
@@ -31,7 +33,7 @@ class DeviceCardVM:
     @classmethod
     def from_state(
         cls, device: DeviceState, capabilities: ProductCapabilities | None
-    ) -> DeviceCardVM:
+    ) -> DeviceVM:
         return cls(
             did=device.did,
             alias=device.dev_alias or "Sans nom",
@@ -39,4 +41,6 @@ class DeviceCardVM:
             is_online=device.is_online,
             lock=device.lock,
             mode=device.mode,
+            model=device.product_name,
+            serial=device.mac,
         )

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Appareil introuvable - heatzyd{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="text-body-secondary mb-2">{{ icon("alert", "icon-xxl") }}</div>
+    <h1 class="h5">Appareil introuvable</h1>
+    <p class="text-body-secondary">Cet appareil n'existe pas ou n'est plus associé à votre compte.</p>
+    <a href="/" class="btn btn-primary d-inline-flex align-items-center gap-2">Retour aux appareils</a>
+</div>
+{% endblock %}

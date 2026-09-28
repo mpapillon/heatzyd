@@ -1,0 +1,17 @@
+<button class="btn btn-link p-0 w-100 d-flex align-items-center gap-3 collapsed text-reset text-decoration-none"
+    type="button" data-bs-toggle="collapse" data-bs-target="#edit-name"
+    aria-expanded="false" aria-controls="edit-name" disabled>
+  <span class="setting-icon">{{ icon('tag') }}</span>
+  <span class="flex-grow-1 text-start">Nom</span>
+  <span class="text-body-secondary small">{{ device.alias }}</span>
+  {{ icon('chevron-down', cls='collapse-chevron') }}
+</button>
+<div id="edit-name" class="collapse">
+  <div class="pt-3">
+    <div class="d-flex flex-column flex-sm-row gap-2">
+      <label class="visually-hidden" for="name-{{ device.did }}">Nom</label>
+      <input type="text" class="form-control" id="name-{{ device.did }}" value="{{ device.alias }}" autocomplete="off" disabled>
+      <button class="btn btn-primary flex-shrink-0" type="button" disabled>Enregistrer</button>
+    </div>
+  </div>
+</div>

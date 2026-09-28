@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block content %}
+<div hx-sse:connect="/events" aria-hidden="true"></div>
+<div hx-get="/devices/{{ device.did }}/live" hx-trigger="device_changed@{{ device.did }} from:body"></div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Appareils</a></li>
+        <li class="breadcrumb-item active" aria-current="page">
+            {{ device.alias }}
+        </li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md">
+        <h6>Mode</h6>
+        <p>-</p>
+
+        <h6>Boost</h6>
+        <p>-</p>
+    </div>
+    <div class="col-md">
+        <h6>Réglages</h6>
+        <div class="card mt-3">
+          <div class="list-group list-group-flush">
+              {% if device.capabilities.lock %}
+              <div id="dev-lock" class="list-group-item py-3">
+                {% include 'partials/device_lock.html' %}
+              </div>
+              {% endif %}
+
+              {% if device.capabilities.vacations %}
+              <div id="dev-vacations" class="list-group-item py-3">
+                {% include 'partials/device_vacations.html' %}
+              </div>
+              {% endif %}
+
+              <div id="dev-name" class="list-group-item py-3">
+                {% include 'partials/device_name.html' %}
+              </div>
+
+              {% if device.capabilities.program %}
+              <div id="dev-program" class="list-group-item py-3">
+                {% include 'partials/device_program.html' %}
+              </div>
+              {% endif %}
+
+              <div id="dev-info" class="list-group-item py-3">
+                {% include 'partials/device_info.html' %}
+              </div>
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+<span class="d-flex align-items-center gap-3 mb-3">
+  <span class="setting-icon">{{ icon('info') }}</span>Informations techniques
+</span>
+<dl class="row mb-0">
+  <dt class="col-12 col-sm-6 fw-normal">État</dt>
+  <dd class="col-12 col-sm-6 text-sm-end mb-2 text-body-secondary font-monospace">
+      {% if device.is_online %}En ligne{% else %}Déconnecté{% endif %}
+  </dd>
+  <dt class="col-12 col-sm-6 fw-normal">Modèle</dt>
+  <dd class="col-12 col-sm-6 text-sm-end mb-2 text-body-secondary font-monospace user-select-all">
+      {{ device.model }}
+  </dd>
+  <dt class="col-12 col-sm-6 fw-normal">N° de série</dt>
+  <dd class="col-12 col-sm-6 text-sm-end mb-0 text-body-secondary font-monospace user-select-all">
+      {{ device.serial }}
+  </dd>
+</dl>

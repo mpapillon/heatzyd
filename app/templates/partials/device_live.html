@@ -1,0 +1,11 @@
+{% if device.capabilities.lock %}
+<hx-partial hx-target="#dev-lock">{% include 'partials/device_lock.html' %}</hx-partial>
+{% endif %}
+{% if device.capabilities.vacations %}
+<hx-partial hx-target="#dev-vacations" hx-swap="innerMorph">{% include 'partials/device_vacations.html' %}</hx-partial>
+{% endif %}
+{% if device.capabilities.program %}
+<hx-partial hx-target="#dev-program" hx-swap="innerMorph">{% include 'partials/device_program.html' %}</hx-partial>
+{% endif %}
+<hx-partial hx-target="#dev-name" hx-swap="innerMorph">{% include 'partials/device_name.html' %}</hx-partial>
+<hx-partial hx-target="#dev-info">{% include 'partials/device_info.html' %}</hx-partial>

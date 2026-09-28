@@ -1,0 +1,15 @@
+<label class="d-flex align-items-center gap-3" for="program-{{ device.did }}">
+  <span class="setting-icon setting-icon--program">{{ icon('clock') }}</span>
+  <span class="flex-grow-1">
+    <span class="d-block">Programmation</span>
+  </span>
+  <span class="form-check form-switch m-0 flex-shrink-0">
+    <input class="form-check-input" type="checkbox" role="switch"
+           id="program-{{ device.did }}" disabled>
+  </span>
+</label>
+<a class="setting-link" href="#">
+  <span class="setting-spacer" aria-hidden="true"></span>
+  <span class="flex-grow-1">Modifier la programmation</span>
+  <span aria-hidden="true">{{ icon('chevron-right') }}</span>
+</a>

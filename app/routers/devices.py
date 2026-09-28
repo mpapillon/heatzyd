@@ -15,7 +15,7 @@ from app.heatzy.errors import (
     NotConnected,
 )
 from app.templating import templates
-from app.viewmodels import DeviceCardVM
+from app.viewmodels import DeviceVM
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,25 @@ async def device_card(
     return templates.TemplateResponse(
         request,
         "partials/device_card.html",
-        {"device": DeviceCardVM.from_state(device, cap)},
+        {"device": DeviceVM.from_state(device, cap)},
+    )
+
+
+@router.get("/devices/{did}/live", response_class=HTMLResponse)
+async def device_live(
+    request: Request,
+    ctx: AppContextDep,
+    did: str,
+):
+    device = ctx.service.get_device(did)
+    if device is None:
+        return Response(status_code=404)
+
+    cap = capabilities_for(device.product_key)
+    return templates.TemplateResponse(
+        request,
+        "partials/device_live.html",
+        {"device": DeviceVM.from_state(device, cap)},
     )
 
 
