@@ -9,8 +9,10 @@ from app.heatzy.device import DeviceState
 class DeviceCardVM:
     did: str
     alias: str
-    mode: Mode | None
     capabilities: ProductCapabilities | None
+    is_online: bool
+    lock: bool
+    mode: Mode | None
 
     @property
     def quick_switch(self) -> Mode | None:
@@ -22,6 +24,10 @@ class DeviceCardVM:
     def available_modes(self) -> tuple[Mode, ...]:
         return self.capabilities.modes if self.capabilities else ()
 
+    @property
+    def dashboard_modes(self) -> tuple[Mode, ...]:
+        return tuple(m for m in self.available_modes if m != Mode.OFF)
+
     @classmethod
     def from_state(
         cls, device: DeviceState, capabilities: ProductCapabilities | None
@@ -29,6 +35,8 @@ class DeviceCardVM:
         return cls(
             did=device.did,
             alias=device.dev_alias or "Sans nom",
-            mode=device.mode,
             capabilities=capabilities,
+            is_online=device.is_online,
+            lock=device.lock,
+            mode=device.mode,
         )

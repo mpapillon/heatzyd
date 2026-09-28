@@ -1,9 +1,9 @@
-<div class="card shadow-sm h-100" id="dev-{{ device.did }}"
+<div class="card h-100" id="dev-{{ device.did }}"
     hx-get="/devices/{{ device.did }}/card"
     hx-trigger="device_changed@{{ device.did }} from:body"
     hx-swap="outerHTML">
     <div class="card-body d-flex align-items-center gap-3">
-        <button type="button" class="mode-icon"
+        <button type="button" class="mode-icon-btn"
                 hx-post="/devices/{{ device.did }}/order"
                 hx-vals='{"mode": "{{ mode_value(device.quick_switch) }}"}'
                 hx-swap="none"
@@ -16,6 +16,44 @@
         <div class="device-meta flex-grow-1">
             <div class="dev-alias fw-semibold text-truncate">{{ device.alias }}</div>
             <div class="text-body-secondary small text-truncate">{{ mode_label(device.mode) }}</div>
+        </div>
+        <div class="dropdown d-none d-md-block">
+          <button type="button" class="btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Plus d'options">
+            {{ icon("menu") }}
+          </button>
+          <ul class="dropdown-menu shadow-sm">
+            {% if device.dashboard_modes %}
+            <li><h6 class="dropdown-header">Mode</h6></li>
+            {% for mode in device.dashboard_modes %}
+            <li>
+                <button type="button" class="dropdown-item d-flex flex-row gap-3"
+                    hx-post="/devices/{{ device.did }}/order"
+                    hx-vals='{"mode": "{{ mode_value(mode) }}"}'
+                    hx-swap="none"
+                    hx-disable="this"{% if not device.is_online %} disabled{% endif %}>
+                    <span class="d-flex flex-row gap-2 flex-grow-1">
+                        <span class="mode-icon" data-mode="{{ mode_value(mode) }}">{{ mode_icon(mode) }}</span>
+                        {{ mode_label(mode) }}
+                    </span>
+                    <span{% if mode != device.mode %} class="invisible"{% endif %}>{{ icon("check") }}</span>
+                </button>
+            </li>
+            {% endfor %}
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Appareil</h6></li>
+            {% if device.capabilities.lock %}
+            <li>
+                <label class="dropdown-item disabled form-switch d-flex align-items-center gap-3"
+                       for="lock-{{ device.did }}" aria-disabled="true">
+                    <span class="flex-grow-1">Verrou</span>
+                    <input class="form-check-input me-0" type="checkbox" role="switch"
+                           id="lock-{{ device.did }}"{% if device.lock %} checked{% endif %}
+                           disabled>
+                </label>
+            </li>
+            {% endif %}
+          </ul>
         </div>
     </div>
 </div>
