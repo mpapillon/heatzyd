@@ -53,4 +53,4 @@ The "login"is the Heatzy credential input, not an application account. Credentia
 
 ## Use of AI
 
-AI is used for code review and documentation generation. The `scripts` directory contains generated code.
+AI is used for code review, generating tests and documentation. The `scripts` directory contains generated code.

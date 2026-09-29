@@ -120,14 +120,7 @@ class HeatzyService:
         did = device.get("did")
         if did is None:
             return
-
-        def on_done(task: asyncio.Task[None]) -> None:
-            if (exc := task.exception()) is not None:
-                logger.error("device_changed event failed for %s: %s", did, exc)
-
-        asyncio.get_running_loop().create_task(
-            self._events.emit("device_changed", did)
-        ).add_done_callback(on_done)
+        self._events.emit("device_changed", did)
 
     def _capabilities_or_raise(self, did: str) -> ProductCapabilities:
         if self._client is None or not self.is_connected:

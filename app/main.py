@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
         yield
     finally:
         await service.stop()
+        await events.shutdown()
 
 
 def create_app() -> FastAPI:
