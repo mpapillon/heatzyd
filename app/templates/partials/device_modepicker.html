@@ -1,0 +1,16 @@
+{% for mode in device.available_modes %}
+<div class="position-relative">
+  <button type="button"
+          class="list-group-item list-group-item-action d-flex align-items-center gap-2 py-3"
+          data-mode="{{ mode_value(mode) }}"
+          hx-post="/devices/{{ device.did }}/order"
+          hx-vals='{"mode": "{{ mode_value(mode) }}"}'
+          hx-swap="none"
+          hx-disable="this"
+          {% if mode == device.mode %}aria-current="true"{% endif %}
+          {% if not device.is_online %}disabled{% endif %}>
+    <span class="mode-icon" data-mode="{{ mode_value(mode) }}">{{ mode_icon(mode, "icon-lg") }}</span>
+    <strong class="fw-semibold">{{ mode_label(mode) }}</strong>
+  </button>
+</div>
+{% endfor %}

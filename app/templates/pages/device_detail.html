@@ -14,14 +14,16 @@
 <div class="row">
     <div class="col-md">
         <h6>Mode</h6>
-        <p>-</p>
+        <div id="dev-mode" class="mode-picker list-group d-grid gap-2 border-0 mt-3 mb-3">
+          {% include 'partials/device_modepicker.html' %}
+        </div>
 
         <h6>Boost</h6>
         <p>-</p>
     </div>
     <div class="col-md">
         <h6>Réglages</h6>
-        <div class="card mt-3">
+        <div class="card my-3">
           <div class="list-group list-group-flush">
               {% if device.capabilities.lock %}
               <div id="dev-lock" class="list-group-item py-3">
