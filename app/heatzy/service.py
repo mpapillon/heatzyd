@@ -66,6 +66,7 @@ class HeatzyService:
             self._listen_task = asyncio.create_task(
                 self._client.websocket.async_listen()
             )
+            self._listen_task.add_done_callback(self._handle_task)
         except Exception:
             await self.stop()
             raise
@@ -145,3 +146,9 @@ class HeatzyService:
             await self._client.websocket.async_control_device(did, payload)
         except (HeatzyException, ClientError) as error:
             raise ControlFailed(str(error)) from error
+
+    def _handle_task(self, task: asyncio.Task[None]) -> None:
+        if task.cancelled():
+            return
+        if (exc := task.exception()) is not None:
+            logger.error("task failed: %s", exc)
