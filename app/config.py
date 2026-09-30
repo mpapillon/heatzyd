@@ -12,5 +12,9 @@ class Settings(BaseSettings):
     tz: str | None = None  # None = system
     log_level: str = "INFO"
 
+    retry_backoff_base: int = 15
+    retry_backoff_cap: int = 240
+    retry_max_attempts: int = 5
+
 
 settings = Settings()
