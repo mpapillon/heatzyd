@@ -8,7 +8,15 @@ from app.domain.protocol import (
     extract_mode,
     parse_int,
     parse_int_flag,
+    parse_remark,
 )
+
+
+@dataclass(frozen=True, slots=True)
+class Group:
+    id: int
+    name: str
+    range: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +26,10 @@ class DeviceState:
     @property
     def _attrs(self) -> dict[str, Any]:
         return self.raw_device.get("attrs", {})
+
+    @property
+    def _remark(self) -> dict[str, str]:
+        return parse_remark(self.raw_device.get("remark", ""))
 
     @property
     def did(self) -> str:
@@ -38,6 +50,18 @@ class DeviceState:
     @property
     def product_key(self) -> str:
         return self.raw_device.get("product_key", "")
+
+    @property
+    def range(self) -> int:
+        return parse_int(self._remark.get("range", 0))
+
+    @property
+    def group(self) -> Group:
+        return Group(
+            id=parse_int(self._remark.get("gid", 0)),
+            name=self._remark.get("groupname", ""),
+            range=parse_int(self._remark.get("grouprange", 0)),
+        )
 
     @property
     def is_online(self) -> bool:

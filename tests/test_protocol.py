@@ -13,6 +13,7 @@ from app.domain.protocol import (
     extract_derog_mode,
     parse_derog_mode,
     parse_int,
+    parse_remark,
 )
 
 
@@ -48,6 +49,25 @@ def test_parse_int() -> None:
     assert parse_int(None) == 0
     assert parse_int(True) == 0
     assert parse_int("nope", default=-1) == -1
+
+
+def test_parse_remark_splits_pairs() -> None:
+    remark = "range=4|isdelete=1|gid=0|groupname=|grouprange=4"
+
+    assert parse_remark(remark) == {
+        "range": "4",
+        "isdelete": "1",
+        "gid": "0",
+        "groupname": "",
+        "grouprange": "4",
+    }
+
+
+def test_parse_remark_keeps_equals_in_value() -> None:
+    assert parse_remark("range=4|groupname=a=b") == {
+        "range": "4",
+        "groupname": "a=b",
+    }
 
 
 # supports_derog

@@ -54,6 +54,12 @@ def parse_int_flag(raw: object) -> bool:
     return False
 
 
+def parse_remark(remark: str) -> dict[str, str]:
+    if not remark:
+        return {}
+    return dict(pair.split("=", 1) for pair in remark.split("|"))
+
+
 def extract_mode(attrs: dict[str, Any]) -> Mode | None:
     return parse_mode(attrs.get("mode"))
 

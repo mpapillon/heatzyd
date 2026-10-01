@@ -69,9 +69,10 @@ class HeatzyService:
     def devices(self) -> list[DeviceState]:
         if self._client is None:
             return []
-        return [
-            DeviceState(device) for device in self._client.websocket.devices.values()
-        ]
+        return sorted(
+            [DeviceState(device) for device in self._client.websocket.devices.values()],
+            key=lambda device: device.range,
+        )
 
     @property
     def is_connected(self) -> bool:
