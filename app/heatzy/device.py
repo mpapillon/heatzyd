@@ -1,8 +1,14 @@
 from dataclasses import dataclass
 from typing import Any
 
+from app.domain.derog import DerogMode
 from app.domain.modes import Mode
-from app.domain.protocol import extract_mode, parse_int_flag
+from app.domain.protocol import (
+    extract_derog_mode,
+    extract_mode,
+    parse_int,
+    parse_int_flag,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,3 +56,11 @@ class DeviceState:
     @property
     def timer_switch(self) -> bool:
         return parse_int_flag(self._attrs.get("timer_switch"))
+
+    @property
+    def derog_mode(self) -> DerogMode:
+        return extract_derog_mode(self._attrs)
+
+    @property
+    def derog_time(self) -> int:
+        return parse_int(self._attrs.get("derog_time"))

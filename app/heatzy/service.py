@@ -18,8 +18,9 @@ from heatzypy.exception import (
 from app.config import Settings
 from app.domain.capabilities import ProductCapabilities, capabilities_for
 from app.domain.control import backoff
+from app.domain.derog import DerogMode
 from app.domain.modes import Mode
-from app.domain.protocol import encode_lock, encode_order
+from app.domain.protocol import encode_derog, encode_lock, encode_order
 from app.heatzy.device import DeviceState
 from app.heatzy.errors import (
     ControlFailed,
@@ -157,6 +158,18 @@ class HeatzyService:
         await self._send_command(
             did, encode_lock(self._capabilities_or_raise(did), lock)
         )
+
+    async def send_derog(self, did: str, kind: DerogMode, time: int) -> None:
+        await self._send_command(
+            did, encode_derog(self._capabilities_or_raise(did), kind, time)
+        )
+
+    async def cancel_derog(self, did: str) -> None:
+        cap = self._capabilities_or_raise(did)
+        device = self.get_device(did)
+        if device is not None and device.derog_mode == DerogMode.NONE:
+            return
+        await self._send_command(did, encode_derog(cap, DerogMode.NONE))
 
     def _on_device_changed(self, device: dict[str, Any]) -> None:
         did = device.get("did")

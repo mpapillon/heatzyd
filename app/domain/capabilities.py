@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from app.domain.derog import DerogMode
 from app.domain.modes import NON_COMMANDABLE_MODES, Mode
 
 
@@ -11,8 +12,19 @@ class ProductCapabilities:
     program: bool = True
     vacations: bool = True
 
-    def supports(self, mode: Mode) -> bool:
+    def supports_mode(self, mode: Mode) -> bool:
         return mode not in NON_COMMANDABLE_MODES and mode in self.modes
+
+    def supports_derog(self, kind: DerogMode) -> bool:
+        match kind:
+            case DerogMode.BOOST:
+                return self.boost
+            case DerogMode.VACATIONS:
+                return self.vacations
+            case DerogMode.NONE:
+                return self.boost or self.vacations
+            case _:
+                return False
 
 
 _MODES_BASE = (Mode.CONFORT, Mode.ECO, Mode.HORS_GEL, Mode.OFF)

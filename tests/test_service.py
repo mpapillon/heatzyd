@@ -12,7 +12,8 @@ from heatzypy.exception import WebsocketError
 
 from app.config import Settings
 from app.domain.capabilities import PILOTE_GEN_1, PILOTE_GEN_4
-from app.domain.errors import LockNotSupported, ModeNotSupported
+from app.domain.derog import DerogMode
+from app.domain.errors import DerogNotSupported, LockNotSupported, ModeNotSupported
 from app.domain.modes import Mode
 from app.heatzy import service as service_mod
 from app.heatzy.errors import (
@@ -138,8 +139,15 @@ def _credentials_connected() -> bool:
         return creds.connected if creds is not None else False
 
 
-def _device(did: str = "did-1", product_key: str = PILOTE_GEN_4[0]) -> dict[str, Any]:
-    return {"did": did, "product_key": product_key}
+def _device(
+    did: str = "did-1",
+    product_key: str = PILOTE_GEN_4[0],
+    attrs: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    device: dict[str, Any] = {"did": did, "product_key": product_key}
+    if attrs is not None:
+        device["attrs"] = attrs
+    return device
 
 
 def _use(service: HeatzyService, fake: FakeHeatzypyClient) -> None:
@@ -555,6 +563,94 @@ async def test_send_lock_not_supported(
 
     with pytest.raises(LockNotSupported):
         await service.send_lock("did-1", True)
+
+
+# send_derog / cancel_derog
+
+
+async def test_send_derog_requires_connection(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _use(service, fake)
+
+    with pytest.raises(NotConnected):
+        await service.send_derog("did-1", DerogMode.BOOST, 30)
+
+
+async def test_send_derog_unknown_device(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+
+    with pytest.raises(DeviceNotFound):
+        await service.send_derog("did-1", DerogMode.BOOST, 30)
+
+
+async def test_send_derog_unsupported_product(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device(product_key=PILOTE_GEN_1[0])}
+
+    with pytest.raises(DerogNotSupported):
+        await service.send_derog("did-1", DerogMode.BOOST, 30)
+
+
+async def test_send_derog_sends_encoded_payload(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device()}
+
+    await service.send_derog("did-1", DerogMode.BOOST, 45)
+
+    assert fake.websocket.sent == [
+        ("did-1", {"attrs": {"derog_mode": 2, "derog_time": 45}})
+    ]
+
+
+async def test_cancel_derog_requires_connection(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _use(service, fake)
+
+    with pytest.raises(NotConnected):
+        await service.cancel_derog("did-1")
+
+
+async def test_cancel_derog_unknown_device(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+
+    with pytest.raises(DeviceNotFound):
+        await service.cancel_derog("did-1")
+
+
+async def test_cancel_derog_noop_without_active_derog(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device(attrs={"derog_mode": 0})}
+
+    await service.cancel_derog("did-1")
+
+    assert fake.websocket.sent == []
+
+
+async def test_cancel_derog_sends_clear_payload(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {
+        "did-1": _device(attrs={"derog_mode": 2, "derog_time": 30})
+    }
+
+    await service.cancel_derog("did-1")
+
+    assert fake.websocket.sent == [
+        ("did-1", {"attrs": {"derog_mode": 0, "derog_time": 0}})
+    ]
 
 
 # device changed hook

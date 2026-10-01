@@ -6,7 +6,8 @@ from fastapi.responses import HTMLResponse, Response
 
 from app.deps import AppContextDep
 from app.domain.capabilities import capabilities_for
-from app.domain.errors import LockNotSupported, ModeNotSupported
+from app.domain.derog import DerogMode
+from app.domain.errors import DerogNotSupported, LockNotSupported, ModeNotSupported
 from app.domain.modes import Mode
 from app.heatzy.errors import (
     ControlFailed,
@@ -92,6 +93,47 @@ async def device_lock(ctx: AppContextDep, did: str, lock: Annotated[bool, Form()
     except DeviceNotSupported:
         return Response(status_code=409)
     except LockNotSupported:
+        return Response(status_code=400)
+    except ControlFailed:
+        return Response(status_code=502)
+
+    return Response(status_code=204)
+
+
+@router.post("/devices/{did}/derog")
+async def device_derog(
+    ctx: AppContextDep,
+    did: str,
+    derog_mode: Annotated[DerogMode, Form()],
+    derog_time: Annotated[int, Form(ge=1, le=255)],
+):
+    try:
+        await ctx.service.send_derog(did, derog_mode, derog_time)
+    except NotConnected:
+        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    except DeviceNotFound:
+        return Response(status_code=404)
+    except DeviceNotSupported:
+        return Response(status_code=409)
+    except DerogNotSupported, ValueError:
+        return Response(status_code=400)
+    except ControlFailed:
+        return Response(status_code=502)
+
+    return Response(status_code=204)
+
+
+@router.delete("/devices/{did}/derog")
+async def device_derog_delete(ctx: AppContextDep, did: str):
+    try:
+        await ctx.service.cancel_derog(did)
+    except NotConnected:
+        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    except DeviceNotFound:
+        return Response(status_code=404)
+    except DeviceNotSupported:
+        return Response(status_code=409)
+    except DerogNotSupported, ValueError:
         return Response(status_code=400)
     except ControlFailed:
         return Response(status_code=502)
