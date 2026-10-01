@@ -139,3 +139,19 @@ async def device_derog_delete(ctx: AppContextDep, did: str):
         return Response(status_code=502)
 
     return Response(status_code=204)
+
+
+@router.patch("/devices/{did}/rename")
+async def device_rename(ctx: AppContextDep, did: str, name: Annotated[str, Form()]):
+    try:
+        await ctx.service.rename(did, name)
+    except NotConnected:
+        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    except DeviceNotFound:
+        return Response(status_code=404)
+    except DeviceNotSupported:
+        return Response(status_code=409)
+    except ControlFailed:
+        return Response(status_code=502)
+
+    return Response(status_code=204)

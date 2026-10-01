@@ -8,7 +8,7 @@ from typing import Any, cast
 import pytest
 from aiohttp import ClientError
 from heatzypy import AuthenticationFailed, HeatzyClient, HeatzyException
-from heatzypy.exception import WebsocketError
+from heatzypy.exception import CommandFailed, WebsocketError
 
 from app.config import Settings
 from app.domain.capabilities import PILOTE_GEN_1, PILOTE_GEN_4
@@ -84,6 +84,17 @@ class FakeHeatzypyClient:
     def __init__(self) -> None:
         self.websocket = FakeHeatzypyWebsocket()
         self.close_calls = 0
+        self.requests: list[tuple[str, str, dict[str, Any]]] = []
+        self.request_error: BaseException | None = None
+        self.request_response: dict[str, Any] = {}
+
+    async def async_request(
+        self, path: str, method: str = "get", **kwargs: Any
+    ) -> dict[str, Any]:
+        self.requests.append((path, method, kwargs))
+        if self.request_error is not None:
+            raise self.request_error
+        return self.request_response
 
     async def async_close(self) -> None:
         self.close_calls += 1
@@ -651,6 +662,52 @@ async def test_cancel_derog_sends_clear_payload(
     assert fake.websocket.sent == [
         ("did-1", {"attrs": {"derog_mode": 0, "derog_time": 0}})
     ]
+
+
+# rename
+
+
+async def test_rename_requires_client(service: HeatzyService) -> None:
+    with pytest.raises(NotConnected):
+        await service.rename("did-1", "Salon")
+
+
+async def test_rename_unknown_device(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+
+    with pytest.raises(DeviceNotFound):
+        await service.rename("did-1", "Salon")
+
+
+async def test_rename_updates_cache_and_emits_event(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device()}
+    fake.request_response = {"dev_alias": "Salon"}
+    received: list[Any] = []
+    service._events.on("device_changed", received.append)
+
+    await service.rename("did-1", "Salon")
+
+    assert fake.requests == [
+        ("bindings/did-1", "put", {"json": {"dev_alias": "Salon"}})
+    ]
+    assert fake.websocket.devices["did-1"]["dev_alias"] == "Salon"
+    assert received == ["did-1"]
+
+
+async def test_rename_wraps_transport_error(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device()}
+    fake.request_error = CommandFailed("boom")
+
+    with pytest.raises(ControlFailed):
+        await service.rename("did-1", "Salon")
 
 
 # device changed hook

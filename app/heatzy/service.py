@@ -149,6 +149,22 @@ class HeatzyService:
                 return device
         return None
 
+    async def rename(self, did: str, name: str) -> None:
+        if self._client is None:
+            raise NotConnected
+        if (device := self.get_device(did)) is None:
+            raise DeviceNotFound(did)
+        try:
+            response = await self._client.async_request(
+                f"bindings/{did}",
+                "put",
+                json={"dev_alias": name},
+            )
+        except (HeatzyException, ClientError) as error:
+            raise ControlFailed(str(error)) from error
+        device.raw_device["dev_alias"] = response.get("dev_alias", name)
+        self._events.emit("device_changed", did)
+
     async def send_order(self, did: str, mode: Mode) -> None:
         await self._send_command(
             did, encode_order(self._capabilities_or_raise(did), mode)
