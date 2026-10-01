@@ -9,9 +9,6 @@ type Handler = Callable[[Any], Awaitable[None] | None]
 
 logger = logging.getLogger(__name__)
 
-_MAX_PENDING = 64
-_SLOW = object()
-
 
 class EventEmitter:
     def __init__(self) -> None:
@@ -50,31 +47,6 @@ class EventEmitter:
                 logger.error("Error in event listener: %s", event, exc_info=exc)
 
         task.add_done_callback(_done)
-
-    async def stream(self, event: str):
-        queue: asyncio.Queue[Any] = asyncio.Queue(_MAX_PENDING)
-
-        def _push(payload: Any) -> None:
-            if queue.full():
-                try:
-                    queue.get_nowait()
-                except asyncio.QueueEmpty:
-                    pass
-                queue.put_nowait(_SLOW)
-                return
-            queue.put_nowait(payload)
-
-        self.on(event, _push)
-
-        try:
-            while True:
-                payload = await queue.get()
-                if payload is _SLOW:
-                    logger.warning("slow consumer on event %r", event)
-                    return
-                yield payload
-        finally:
-            self.off(event, _push)
 
     async def shutdown(self) -> None:
         for task in list(self._pending):

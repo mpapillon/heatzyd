@@ -576,3 +576,102 @@ def test_on_device_changed_without_did_is_ignored(service: HeatzyService) -> Non
     service._on_device_changed({})
 
     assert received == []
+
+
+# status
+
+
+def test_set_status_emits_only_on_change(service: HeatzyService) -> None:
+    received: list[str] = []
+    service._events.on("service_status", received.append)
+
+    service._set_status("connected")
+    service._set_status("connected")
+    service._set_status("reconnecting")
+
+    assert received == ["connected", "reconnecting"]
+
+
+def test_default_status_is_logged_out(service: HeatzyService) -> None:
+    assert service.status == "logged_out"
+
+
+async def test_login_sets_connected_status(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    await service.login("user", "pass")
+    try:
+        assert service.status == "connected"
+    finally:
+        await service.stop()
+
+
+async def test_login_failure_falls_back_to_logged_out(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    fake.websocket.connect_error = AuthenticationFailed("bad")
+
+    with pytest.raises(AuthenticationFailed):
+        await service.login("user", "pass")
+
+    assert service.status == "logged_out"
+
+
+async def test_stop_sets_logged_out(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    await service.login("user", "pass")
+
+    await service.stop()
+
+    assert service.status == "logged_out"
+
+
+async def test_start_without_credentials_stays_logged_out(
+    service: HeatzyService,
+) -> None:
+    await service.start()
+
+    assert service.status == "logged_out"
+
+
+async def test_reconnect_marks_reconnecting_on_retry(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.connect_error = WebsocketError("down")
+
+    assert await service._reconnect(None) is True
+    assert service.status == "reconnecting"
+
+
+async def test_reconnect_marks_connected_on_success(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _use(service, fake)
+    service.status = "reconnecting"
+
+    assert await service._reconnect(None) is True
+    assert service.status == "connected"
+
+
+async def test_reconnect_marks_logged_out_when_budget_exhausted(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _use(service, fake)
+    service._connection_attempts = service._retry_max_attempts
+
+    assert await service._reconnect(None) is False
+    assert service.status == "logged_out"
+
+
+async def test_handle_auth_failure_sets_logged_out(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _set_credentials()
+    service.status = "connected"
+    service._client = cast(HeatzyClient, fake)
+
+    await service._handle_auth_failure()
+
+    assert service.status == "logged_out"

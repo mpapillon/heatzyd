@@ -5,17 +5,7 @@ from typing import Any
 
 import pytest
 
-from app.heatzy.events import _MAX_PENDING, EventEmitter
-
-
-async def _wait_for_listeners(
-    emitter: EventEmitter, event: str, count: int = 1
-) -> None:
-    for _ in range(1000):
-        if len(emitter._listeners.get(event, [])) >= count:
-            return
-        await asyncio.sleep(0)
-    raise AssertionError(f"listener for {event!r} never registered")
+from app.heatzy.events import EventEmitter
 
 
 async def _collect(gen: AsyncGenerator[Any], count: int) -> list[Any]:
@@ -193,78 +183,3 @@ async def test_async_listener_exception_is_logged_not_raised(
 
     assert emitter._pending == set()
     assert any("Error in event listener" in m for m in caplog.messages)
-
-
-# Stream
-
-
-async def test_stream_yields_emitted_payloads() -> None:
-    emitter = EventEmitter()
-    task = asyncio.create_task(_collect(emitter.stream("e"), 2))
-    await _wait_for_listeners(emitter, "e")
-
-    emitter.emit("e", "a")
-    emitter.emit("e", "b")
-
-    assert await asyncio.wait_for(task, 1) == ["a", "b"]
-
-
-async def test_stream_preserves_order() -> None:
-    emitter = EventEmitter()
-    task = asyncio.create_task(_collect(emitter.stream("e"), 3))
-    await _wait_for_listeners(emitter, "e")
-
-    for payload in ("a", "b", "c"):
-        emitter.emit("e", payload)
-
-    assert await asyncio.wait_for(task, 1) == ["a", "b", "c"]
-
-
-async def test_stream_supports_multiple_consumers() -> None:
-    emitter = EventEmitter()
-    first = asyncio.create_task(_collect(emitter.stream("e"), 1))
-    second = asyncio.create_task(_collect(emitter.stream("e"), 1))
-    await _wait_for_listeners(emitter, "e", count=2)
-
-    emitter.emit("e", "a")
-
-    assert await asyncio.wait_for(first, 1) == ["a"]
-    assert await asyncio.wait_for(second, 1) == ["a"]
-
-
-async def test_stream_removes_listener_on_aclose() -> None:
-    emitter = EventEmitter()
-    gen = emitter.stream("e")
-    task = asyncio.create_task(gen.__anext__())
-    await _wait_for_listeners(emitter, "e")
-
-    emitter.emit("e", "a")
-    assert await asyncio.wait_for(task, 1) == "a"
-
-    await gen.aclose()
-
-    assert "e" not in emitter._listeners
-
-
-async def test_stream_slow_consumer_terminates(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    caplog.set_level(logging.WARNING)
-    emitter = EventEmitter()
-    gen = emitter.stream("e")
-    first = asyncio.create_task(gen.__anext__())
-    await _wait_for_listeners(emitter, "e")
-
-    emitted = _MAX_PENDING + 5
-    for index in range(emitted):
-        emitter.emit("e", index)
-
-    received = [await asyncio.wait_for(first, 1)]
-    while True:
-        try:
-            received.append(await asyncio.wait_for(gen.__anext__(), 1))
-        except StopAsyncIteration:
-            break
-
-    assert len(received) < emitted
-    assert any("slow consumer" in m for m in caplog.messages)

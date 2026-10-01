@@ -3,8 +3,9 @@
 {% block content %}
 <h1 class="h4 mb-3">Appareils</h1>
 
-{% if devices %}
 <div hx-sse:connect="/events" aria-hidden="true"></div>
+
+{% if devices %}
 <div class="row row-cols-1 row-cols-lg-3 g-3">
     {% for device in devices %}
     <div class="col">

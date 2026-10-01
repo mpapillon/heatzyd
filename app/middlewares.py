@@ -11,7 +11,7 @@ class IsConnectedMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
         ctx: AppContext = request.app.state.ctx
         path = request.url.path
-        if not ctx.service.is_connected and not path.startswith(_EXEMPT_PREFIXES):
+        if ctx.service.status == "logged_out" and not path.startswith(_EXEMPT_PREFIXES):
             if request.headers.get("hx-request") == "true":
                 return Response(status_code=200, headers={"HX-Redirect": "/login"})
             return RedirectResponse("/login", status_code=303)

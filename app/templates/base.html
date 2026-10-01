@@ -22,6 +22,16 @@
 
         {% block toasts %}{% endblock %}
 
-        <main class="container">{% block content %}{% endblock %}</main>
+        <main class="container">
+          {% block banner %}
+          <div id="service-banner"
+               hx-get="/service/banner"
+               hx-swap="outerHTML"
+               hx-trigger="load, service_status from:body"
+               class="d-none">
+          </div>
+          {% endblock %}
+          {% block content %}{% endblock %}
+        </main>
     </body>
 </html>

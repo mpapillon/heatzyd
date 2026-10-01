@@ -11,7 +11,7 @@ from app.heatzy import HeatzyService
 from app.heatzy.events import EventEmitter
 from app.middlewares import IsConnectedMiddleware
 from app.models.db import init_db
-from app.routers import auth, devices, events_sse, pages
+from app.routers import auth, devices, events_sse, pages, service
 
 
 @asynccontextmanager
@@ -42,6 +42,7 @@ def create_app() -> FastAPI:
     app.include_router(devices.router)
     app.include_router(events_sse.router)
     app.include_router(pages.router)
+    app.include_router(service.router)
     return app
 
 

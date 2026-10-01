@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from aiohttp import ClientError, ClientSession
 from heatzypy import (
@@ -44,10 +44,13 @@ _TRANSIENT_ERRORS = (
 
 _RECONNECT_ERRORS = (*_TRANSIENT_ERRORS, AuthenticationFailed)
 
+type Status = Literal["logged_out", "connecting", "connected", "reconnecting"]
+
 
 class HeatzyService:
     def __init__(self, settings: Settings, events: EventEmitter):
         self.auth_error: str | None = None
+        self.status: Status = "logged_out"
 
         self._events = events
         self._region = settings.heatzy_region
@@ -78,6 +81,7 @@ class HeatzyService:
     async def login(self, username: str, password: str) -> None:
         await self._teardown()
         self._stopping = False
+        self._set_status("connecting")
 
         self._client = HeatzyClient(
             username,
@@ -90,10 +94,12 @@ class HeatzyService:
         try:
             self._client.websocket.register_callback(self._on_device_changed)
             await self._connect()
+            self._set_status("connected")
             self._listen_task = asyncio.create_task(self._supervise())
             self._listen_task.add_done_callback(self._on_listen_task_end)
         except Exception:
             await self._teardown()
+            self._set_status("logged_out")
             raise
         self.auth_error = None
 
@@ -116,6 +122,7 @@ class HeatzyService:
 
     async def stop(self) -> None:
         self._stopping = True
+        self._set_status("logged_out")
         await self._teardown()
 
     async def _teardown(self) -> None:
@@ -182,6 +189,7 @@ class HeatzyService:
             logger.error("listen task ended with error: %s", exc)
 
     async def _handle_auth_failure(self) -> None:
+        self._set_status("logged_out")
         await self._close_client()
         self.auth_error = "Identifiants Heatzy invalides"
         with db.session_scope() as session:
@@ -222,8 +230,11 @@ class HeatzyService:
         if self._connection_attempts > self._retry_max_attempts:
             logger.error("giving up on websocket: %s", error)
             self.auth_error = "La connexion aux serveurs Heatzy a été perdue."
+            self._set_status("logged_out")
             await self._close_client()
             return False
+
+        self._set_status("reconnecting")
 
         delay = backoff(
             self._connection_attempts,
@@ -253,4 +264,11 @@ class HeatzyService:
             return True
 
         self._connection_attempts = 0
+        self._set_status("connected")
         return True
+
+    def _set_status(self, status: Status) -> None:
+        if status == self.status:
+            return
+        self.status = status
+        self._events.emit("service_status", status)

@@ -1,0 +1,8 @@
+<div id="service-banner"
+     hx-get="/service/banner"
+     hx-swap="outerHTML"
+     hx-trigger="service_status from:body"
+     class="alert alert-warning{% if not show_banner %} d-none{% endif %}"
+     role="alert">
+  Connexion perdue avec les serveurs Heatzy, reconnexion en cours...
+</div>
