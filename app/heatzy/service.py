@@ -22,7 +22,12 @@ from app.domain.capabilities import ProductCapabilities, capabilities_for
 from app.domain.control import backoff
 from app.domain.derog import DerogMode
 from app.domain.modes import Mode
-from app.domain.protocol import encode_derog, encode_lock, encode_order
+from app.domain.protocol import (
+    ALIAS_MAX_LENGTH,
+    encode_derog,
+    encode_lock,
+    encode_order,
+)
 from app.heatzy.device import DeviceState
 from app.heatzy.errors import (
     ControlFailed,
@@ -153,20 +158,22 @@ class HeatzyService:
                 return device
         return None
 
-    async def rename(self, did: str, name: str) -> None:
+    async def rename(self, did: str, alias: str) -> None:
         if self._client is None:
             raise NotConnected
         if (device := self.get_device(did)) is None:
             raise DeviceNotFound(did)
+        if len(alias) > ALIAS_MAX_LENGTH:
+            raise ControlFailed(f"alias is too long (max: {ALIAS_MAX_LENGTH})")
         try:
             response = await self._client.async_request(
                 f"bindings/{did}",
                 "put",
-                json={"dev_alias": name},
+                json={"dev_alias": alias},
             )
         except (HeatzyException, ClientError) as error:
             raise ControlFailed(str(error)) from error
-        device.raw_device["dev_alias"] = response.get("dev_alias", name)
+        device.raw_device["dev_alias"] = response.get("dev_alias", alias)
         self._events.emit("device_changed", did)
 
     async def send_order(self, did: str, mode: Mode) -> None:

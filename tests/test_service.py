@@ -16,6 +16,7 @@ from app.domain.capabilities import PILOTE_GEN_1, PILOTE_GEN_4
 from app.domain.derog import DerogMode
 from app.domain.errors import DerogNotSupported, LockNotSupported, ModeNotSupported
 from app.domain.modes import Mode
+from app.domain.protocol import ALIAS_MAX_LENGTH
 from app.heatzy import service as service_mod
 from app.heatzy.errors import (
     ControlFailed,
@@ -749,6 +750,18 @@ async def test_rename_wraps_transport_error(
 
     with pytest.raises(ControlFailed):
         await service.rename("did-1", "Salon")
+
+
+async def test_rename_rejects_too_long_alias(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device()}
+
+    with pytest.raises(ControlFailed):
+        await service.rename("did-1", "x" * (ALIAS_MAX_LENGTH + 1))
+
+    assert fake.requests == []
 
 
 # device changed hook

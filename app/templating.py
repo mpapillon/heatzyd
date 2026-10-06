@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from markupsafe import Markup, escape
 
 from app.domain.modes import Mode
+from app.domain.protocol import ALIAS_MAX_LENGTH
 
 TEMPLATES_DIR = Path("app/templates")
 SPRITE_PATH = Path("app/static/icons.svg")
@@ -112,6 +113,7 @@ def short_date(value: str) -> str:
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.globals.update(
+    alias_max_length=ALIAS_MAX_LENGTH,
     sprite=sprite,
     icon=icon,
     icon_names=icon_names,

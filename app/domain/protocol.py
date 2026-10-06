@@ -8,6 +8,8 @@ from app.domain.modes import Mode
 
 logger = logging.getLogger(__name__)
 
+ALIAS_MAX_LENGTH = 16
+
 
 def parse_mode(raw: str | None) -> Mode | None:
     if raw is None:

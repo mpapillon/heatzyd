@@ -11,7 +11,12 @@ from app.heatzy.errors import (
     DeviceNotSupported,
     NotConnected,
 )
-from app.routers.devices import device_boost, device_derog_delete, device_vacation
+from app.routers.devices import (
+    device_boost,
+    device_derog_delete,
+    device_rename,
+    device_vacation,
+)
 
 RETURNS_ON = datetime(2026, 8, 15)
 
@@ -21,6 +26,13 @@ _ERRORS = [
     pytest.param(DeviceNotSupported("did-1"), 409, id="device-unsupported"),
     pytest.param(DerogNotSupported(), 400, id="derog-unsupported"),
     pytest.param(ValueError("ends_at must be in the future"), 400, id="bad-duration"),
+    pytest.param(ControlFailed("boom"), 502, id="control-failed"),
+]
+
+_RENAME_ERRORS = [
+    pytest.param(NotConnected(), 200, id="not-connected"),
+    pytest.param(DeviceNotFound("did-1"), 404, id="not-found"),
+    pytest.param(DeviceNotSupported("did-1"), 409, id="device-unsupported"),
     pytest.param(ControlFailed("boom"), 502, id="control-failed"),
 ]
 
@@ -42,6 +54,11 @@ class StubService:
 
     async def cancel_derog(self, did: str) -> None:
         self.calls.append(("cancel", did))
+        if self.error is not None:
+            raise self.error
+
+    async def rename(self, did: str, alias: str) -> None:
+        self.calls.append(("rename", did, alias))
         if self.error is not None:
             raise self.error
 
@@ -110,3 +127,43 @@ async def test_device_derog_delete_maps_errors(error: Exception, status: int) ->
     response = await device_derog_delete(_ctx(StubService(error)), "did-1")
 
     assert response.status_code == status
+
+
+async def test_device_rename_sends_alias() -> None:
+    service = StubService()
+
+    response = await device_rename(_ctx(service), "did-1", "Salon")
+
+    assert response.status_code == 204
+    assert service.calls == [("rename", "did-1", "Salon")]
+
+
+async def test_device_rename_trims_alias() -> None:
+    service = StubService()
+
+    response = await device_rename(_ctx(service), "did-1", "  Salon  ")
+
+    assert response.status_code == 204
+    assert service.calls == [("rename", "did-1", "Salon")]
+
+
+async def test_device_rename_rejects_blank_alias() -> None:
+    service = StubService()
+
+    response = await device_rename(_ctx(service), "did-1", "   ")
+
+    assert response.status_code == 400
+    assert service.calls == []
+
+
+@pytest.mark.parametrize(("error", "status"), _RENAME_ERRORS)
+async def test_device_rename_maps_errors(error: Exception, status: int) -> None:
+    response = await device_rename(_ctx(StubService(error)), "did-1", "Salon")
+
+    assert response.status_code == status
+
+
+async def test_device_rename_redirects_to_login_when_disconnected() -> None:
+    response = await device_rename(_ctx(StubService(NotConnected())), "did-1", "Salon")
+
+    assert response.headers["HX-Redirect"] == "/login"

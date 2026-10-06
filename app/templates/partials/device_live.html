@@ -7,6 +7,8 @@
 {% if device.capabilities.program %}
 <hx-partial hx-target="#dev-program" hx-swap="innerMorph">{% include 'partials/device_program.html' %}</hx-partial>
 {% endif %}
-<hx-partial hx-target="#dev-name" hx-swap="innerMorph">{% include 'partials/device_name.html' %}</hx-partial>
+<hx-partial hx-target="#alias-{{ device.did }}" hx-swap="outerMorph">{% include 'partials/device_name_input.html' %}</hx-partial>
+<hx-partial hx-target="#dev-name-alias-{{ device.did }}">{{ device.alias }}</hx-partial>
 <hx-partial hx-target="#dev-info">{% include 'partials/device_info.html' %}</hx-partial>
 <hx-partial hx-target="#dev-mode">{% include 'partials/device_modepicker.html' %}</hx-partial>
+<hx-partial hx-target="#dev-crumb-alias-{{ device.did }}">{{ device.alias }}</hx-partial>

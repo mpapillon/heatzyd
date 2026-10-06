@@ -9,6 +9,7 @@ from app.deps import AppContextDep
 from app.domain.capabilities import capabilities_for
 from app.domain.errors import DerogNotSupported, LockNotSupported, ModeNotSupported
 from app.domain.modes import Mode
+from app.domain.protocol import ALIAS_MAX_LENGTH
 from app.heatzy.errors import (
     ControlFailed,
     DeviceNotFound,
@@ -163,9 +164,16 @@ async def device_derog_delete(ctx: AppContextDep, did: str):
 
 
 @router.patch("/devices/{did}/rename")
-async def device_rename(ctx: AppContextDep, did: str, name: Annotated[str, Form()]):
+async def device_rename(
+    ctx: AppContextDep,
+    did: str,
+    alias: Annotated[str, Form(min_length=1, max_length=ALIAS_MAX_LENGTH)],
+):
+    alias = alias.strip()
+    if not alias:
+        return Response(status_code=400)
     try:
-        await ctx.service.rename(did, name)
+        await ctx.service.rename(did, alias)
     except NotConnected:
         return Response(status_code=200, headers={"HX-Redirect": "/login"})
     except DeviceNotFound:

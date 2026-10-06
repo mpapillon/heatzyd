@@ -67,7 +67,7 @@ class DeviceVM:
     ) -> DeviceVM:
         return cls(
             did=device.did,
-            alias=device.dev_alias or "Sans nom",
+            alias=device.dev_alias or device.mac,
             capabilities=capabilities,
             is_online=device.is_online,
             lock=device.lock,

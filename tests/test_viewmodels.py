@@ -111,7 +111,7 @@ def test_from_state_carries_derogation_and_timezone() -> None:
     assert vm.vacation_min == expected
 
 
-def test_from_state_defaults_missing_alias() -> None:
+def test_from_state_falls_back_to_mac() -> None:
     vm = DeviceVM.from_state(_device(dev_alias=""), None, PARIS)
 
-    assert vm.alias == "Sans nom"
+    assert vm.alias == "AA:BB:CC"
