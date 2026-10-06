@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime
 from typing import Any, Literal
 
 from aiohttp import ClientError, ClientSession
@@ -16,6 +17,7 @@ from heatzypy.exception import (
 )
 
 from app.config import Settings
+from app.domain import derog
 from app.domain.capabilities import ProductCapabilities, capabilities_for
 from app.domain.control import backoff
 from app.domain.derog import DerogMode
@@ -56,6 +58,7 @@ class HeatzyService:
         self._events = events
         self._region = settings.heatzy_region
         self._use_tls = settings.use_tls
+        self._tz = settings.tz
         self._retry_backoff_base = settings.retry_backoff_base
         self._retry_backoff_cap = settings.retry_backoff_cap
         self._retry_max_attempts = settings.retry_max_attempts
@@ -174,6 +177,22 @@ class HeatzyService:
     async def send_lock(self, did: str, lock: bool) -> None:
         await self._send_command(
             did, encode_lock(self._capabilities_or_raise(did), lock)
+        )
+
+    async def send_boost_derog(self, did: str, time: int) -> None:
+        await self._send_command(
+            did, encode_derog(self._capabilities_or_raise(did), DerogMode.BOOST, time)
+        )
+
+    async def send_vacation_derog(self, did: str, ends_at: datetime) -> None:
+        tz = self._tz
+        await self._send_command(
+            did,
+            encode_derog(
+                self._capabilities_or_raise(did),
+                DerogMode.VACATIONS,
+                derog.days_until(ends_at, now=datetime.now(tz), tz=tz),
+            ),
         )
 
     async def send_derog(self, did: str, kind: DerogMode, time: int) -> None:

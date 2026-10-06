@@ -2,6 +2,7 @@ import asyncio
 import logging
 from collections.abc import Callable
 from contextlib import suppress
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -618,6 +619,46 @@ async def test_send_derog_sends_encoded_payload(
     assert fake.websocket.sent == [
         ("did-1", {"attrs": {"derog_mode": 2, "derog_time": 45, "mode": "cft"}})
     ]
+
+
+async def test_send_boost_derog_sends_payload(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device()}
+
+    await service.send_boost_derog("did-1", 45)
+
+    assert fake.websocket.sent == [
+        ("did-1", {"attrs": {"derog_mode": 2, "derog_time": 45, "mode": "cft"}})
+    ]
+
+
+async def test_send_vacation_derog_derives_days_from_ends_at(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device()}
+    # 5 jours demandés : le delta réel est légèrement < 5 j, donc ceil -> 5
+    ends_at = datetime.now() + timedelta(days=5)
+
+    await service.send_vacation_derog("did-1", ends_at)
+
+    assert fake.websocket.sent == [
+        ("did-1", {"attrs": {"derog_mode": 1, "derog_time": 5, "mode": "fro"}})
+    ]
+
+
+async def test_send_vacation_derog_rejects_a_past_date(
+    service: HeatzyService, fake: FakeHeatzypyClient
+) -> None:
+    _connected(service, fake)
+    fake.websocket.devices = {"did-1": _device()}
+
+    with pytest.raises(ValueError, match="future"):
+        await service.send_vacation_derog("did-1", datetime.now() - timedelta(days=1))
+
+    assert fake.websocket.sent == []
 
 
 async def test_cancel_derog_requires_connection(

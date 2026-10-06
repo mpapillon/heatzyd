@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,7 +11,7 @@ class Settings(BaseSettings):
     database_path: str = "data/heatzyd.db"
     heatzy_region: str = "EU"
     use_tls: bool = True
-    tz: str | None = None  # None = system
+    tz: ZoneInfo | None = None  # None = system
     log_level: str = "INFO"
 
     retry_backoff_base: int = 15

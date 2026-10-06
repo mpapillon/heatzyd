@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Form, Request
@@ -6,7 +7,6 @@ from fastapi.responses import HTMLResponse, Response
 
 from app.deps import AppContextDep
 from app.domain.capabilities import capabilities_for
-from app.domain.derog import DerogMode
 from app.domain.errors import DerogNotSupported, LockNotSupported, ModeNotSupported
 from app.domain.modes import Mode
 from app.heatzy.errors import (
@@ -100,15 +100,36 @@ async def device_lock(ctx: AppContextDep, did: str, lock: Annotated[bool, Form()
     return Response(status_code=204)
 
 
-@router.post("/devices/{did}/derog")
-async def device_derog(
+@router.post("/devices/{did}/boost")
+async def device_boost(
     ctx: AppContextDep,
     did: str,
-    derog_mode: Annotated[DerogMode, Form()],
-    derog_time: Annotated[int, Form(ge=1, le=255)],
+    minutes: Annotated[int, Form(ge=1, le=255)],
 ):
     try:
-        await ctx.service.send_derog(did, derog_mode, derog_time)
+        await ctx.service.send_boost_derog(did, minutes)
+    except NotConnected:
+        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    except DeviceNotFound:
+        return Response(status_code=404)
+    except DeviceNotSupported:
+        return Response(status_code=409)
+    except DerogNotSupported, ValueError:
+        return Response(status_code=400)
+    except ControlFailed:
+        return Response(status_code=502)
+
+    return Response(status_code=204)
+
+
+@router.post("/devices/{did}/vacations")
+async def device_vacation(
+    ctx: AppContextDep,
+    did: str,
+    ends_at: Annotated[datetime, Form()],
+):
+    try:
+        await ctx.service.send_vacation_derog(did, ends_at)
     except NotConnected:
         return Response(status_code=200, headers={"HX-Redirect": "/login"})
     except DeviceNotFound:
