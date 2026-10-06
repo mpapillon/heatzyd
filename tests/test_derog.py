@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from app.domain.derog import days_until
+from app.domain.derog import days_until, derogation_bounds
 
 PARIS = ZoneInfo("Europe/Paris")
 
@@ -84,3 +84,11 @@ def test_counts_absolute_time_across_a_dst_change() -> None:
     now = datetime(2026, 10, 24, 12, 0, tzinfo=PARIS)
     ends = datetime(2026, 10, 26, 12, 0, tzinfo=PARIS)
     assert days_until(ends, now=now, tz=PARIS) == 3
+
+
+def test_derogation_bounds_are_tomorrow_and_255_days() -> None:
+    min_date, max_date = derogation_bounds(PARIS)
+    today = datetime.now(PARIS).date()
+
+    assert min_date == today + timedelta(days=1)
+    assert max_date == today + timedelta(days=255)

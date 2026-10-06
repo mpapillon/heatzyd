@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+.zed/
+.agents/
+
 docs/
 data/
 scripts/

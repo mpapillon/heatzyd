@@ -38,7 +38,7 @@ async def device_card(
     return templates.TemplateResponse(
         request,
         "partials/device_card.html",
-        {"device": DeviceVM.from_state(device, cap)},
+        {"device": DeviceVM.from_state(device, cap, ctx.settings.tz)},
     )
 
 
@@ -56,7 +56,7 @@ async def device_live(
     return templates.TemplateResponse(
         request,
         "partials/device_live.html",
-        {"device": DeviceVM.from_state(device, cap)},
+        {"device": DeviceVM.from_state(device, cap, ctx.settings.tz)},
     )
 
 

@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
@@ -105,6 +106,10 @@ def mode_icon(
     return icon(name, cls=cls, title=mode_label(mode))
 
 
+def short_date(value: str) -> str:
+    return date.fromisoformat(value).strftime("%d/%m")
+
+
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.globals.update(
     sprite=sprite,
@@ -114,4 +119,5 @@ templates.env.globals.update(
     mode_icon_name=mode_icon_name,
     mode_label=mode_label,
     mode_value=mode_value,
+    short_date=short_date,
 )

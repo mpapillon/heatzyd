@@ -1,11 +1,14 @@
 import math
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from enum import IntEnum
 from zoneinfo import ZoneInfo
 
 from app.domain.modes import Mode
 
 _DAY_IN_SECONDS = 86400
+
+MIN_DEROGATION_DAYS = 1
+MAX_DEROGATION_DAYS = 255
 
 
 class DerogMode(IntEnum):
@@ -25,13 +28,21 @@ class DerogMode(IntEnum):
                 return None
 
 
+def derogation_bounds(tz: ZoneInfo | None = None) -> tuple[date, date]:
+    today = datetime.now(tz).date()
+    return (
+        today + timedelta(days=MIN_DEROGATION_DAYS),
+        today + timedelta(days=MAX_DEROGATION_DAYS),
+    )
+
+
 def days_until(ends_at: datetime, *, now: datetime, tz: ZoneInfo | None = None) -> int:
     delta = _to_instant(ends_at, tz) - _to_instant(now, tz)
     days = math.ceil(delta.total_seconds() / _DAY_IN_SECONDS)
-    if days < 1:
+    if days < MIN_DEROGATION_DAYS:
         raise ValueError("ends_at must be in the future")
-    if days > 255:
-        raise ValueError("derogation cannot last more than 255 days")
+    if days > MAX_DEROGATION_DAYS:
+        raise ValueError(f"derogation cannot last more than {MAX_DEROGATION_DAYS} days")
     return days
 
 

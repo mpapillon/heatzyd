@@ -17,7 +17,9 @@ router = APIRouter(tags=["pages"])
 @router.get("/", response_class=HTMLResponse)
 def dashboard_page(request: Request, ctx: AppContextDep):
     devices = [
-        DeviceVM.from_state(device, capabilities_for(device.product_key))
+        DeviceVM.from_state(
+            device, capabilities_for(device.product_key), ctx.settings.tz
+        )
         for device in ctx.service.devices
     ]
     return templates.TemplateResponse(
@@ -32,7 +34,9 @@ def device_page(request: Request, ctx: AppContextDep, did: str):
         return templates.TemplateResponse(
             request, "pages/device-not-found.html", {}, status_code=404
         )
-    device_vm = DeviceVM.from_state(device, capabilities_for(device.product_key))
+    device_vm = DeviceVM.from_state(
+        device, capabilities_for(device.product_key), ctx.settings.tz
+    )
     return templates.TemplateResponse(
         request, "pages/device_detail.html", {"device": device_vm}
     )

@@ -1,20 +1,31 @@
 <button class="btn btn-link p-0 w-100 d-flex align-items-center gap-3 collapsed text-reset text-decoration-none"
         type="button" data-bs-toggle="collapse" data-bs-target="#edit-vac"
-        aria-expanded="false" aria-controls="edit-vac" disabled>
+        aria-expanded="false" aria-controls="edit-vac" {% if device.has_vacations %}disabled{% endif %}>
   <span class="setting-icon setting-icon--vacation">{{ icon('briefcase') }}</span>
   <span class="flex-grow-1 text-start">
     <span class="d-block">Mode vacances</span>
-    <small class="text-body-secondary d-block">Hors-gel jusqu'à la date de retour.</small>
+    <small class="text-body-secondary d-block">Hors-gel jusqu'à la date de retour</small>
   </span>
-  <span class="text-body-secondary small">Indisponible</span>
+  {% if device.has_vacations %}
+  <span class="text-body-secondary small">Fin le {{ short_date(device.vacation_ends_at) }}</span>
+  {% endif %}
   {{ icon('chevron-down', cls='collapse-chevron') }}
 </button>
 <div id="edit-vac" class="collapse">
   <div class="pt-3">
-    <div class="d-flex flex-column flex-sm-row gap-2">
+    <form class="d-flex flex-column flex-sm-row gap-2"
+          hx-post="/devices/{{ device.did }}/vacations"
+          hx-swap="none"
+          hx-disable="this">
       <label class="visually-hidden" for="vac-{{ device.did }}">Date de retour</label>
-      <input type="date" class="form-control" id="vac-{{ device.did }}" value="2026-08-15" disabled>
-      <button class="btn btn-primary flex-shrink-0" type="button" disabled>Activer</button>
-    </div>
+      <div class="input-group">
+        <input type="date" name="ends_at" class="form-control" id="vac-{{ device.did }}"
+              value="{{ device.vacation_ends_at or device.vacation_min }}"
+              min="{{ device.vacation_min }}"
+              max="{{ device.vacation_max }}"{% if device.has_vacations or not device.is_online %} disabled{% endif %}>
+        <button class="btn btn-primary flex-shrink-0" type="submit"
+                {% if device.has_vacations or not device.is_online %}disabled{% endif %}>Activer</button>
+      </div>
+    </form>
   </div>
 </div>
