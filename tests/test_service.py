@@ -616,7 +616,7 @@ async def test_send_derog_sends_encoded_payload(
     await service.send_derog("did-1", DerogMode.BOOST, 45)
 
     assert fake.websocket.sent == [
-        ("did-1", {"attrs": {"derog_mode": 2, "derog_time": 45}})
+        ("did-1", {"attrs": {"derog_mode": 2, "derog_time": 45, "mode": "cft"}})
     ]
 
 

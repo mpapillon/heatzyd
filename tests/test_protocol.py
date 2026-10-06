@@ -102,13 +102,13 @@ def test_encode_derog_none_clears_payload() -> None:
 
 def test_encode_derog_boost_is_minutes() -> None:
     assert encode_derog(CAPS_PILOTE_GEN_4, DerogMode.BOOST, 90) == {
-        "attrs": {"derog_mode": 2, "derog_time": 90}
+        "attrs": {"derog_mode": 2, "derog_time": 90, "mode": "cft"}
     }
 
 
 def test_encode_derog_vacations_is_days() -> None:
     assert encode_derog(CAPS_PILOTE_GEN_4, DerogMode.VACATIONS, 5) == {
-        "attrs": {"derog_mode": 1, "derog_time": 5}
+        "attrs": {"derog_mode": 1, "derog_time": 5, "mode": "fro"}
     }
 
 

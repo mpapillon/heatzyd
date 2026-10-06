@@ -90,4 +90,11 @@ def encode_derog(
             raise ValueError("time must be 0 for NONE derog")
     elif not 1 <= time <= 255:
         raise ValueError("time must be between 1 and 255")
-    return {"attrs": {"derog_mode": kind.value, "derog_time": time}}
+
+    attrs: dict[str, Any] = {
+        "derog_mode": kind.value,
+        "derog_time": time,
+    }
+    if kind.mode is not None:
+        attrs["mode"] = kind.mode.value
+    return {"attrs": attrs}
