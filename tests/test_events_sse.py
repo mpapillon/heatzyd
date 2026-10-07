@@ -22,7 +22,7 @@ def _context() -> AppContext:
 
 
 def _use_devices(ctx: AppContext, dids: list[str]) -> None:
-    ctx.service._client = cast(
+    ctx.service._session._client = cast(
         Any,
         SimpleNamespace(
             websocket=SimpleNamespace(devices={did: {"did": did} for did in dids})
