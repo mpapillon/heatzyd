@@ -99,18 +99,18 @@ async def test_device_vacation_maps_errors(error: Exception, status: int) -> Non
     assert response.status_code == status
 
 
-async def test_device_boost_redirects_to_login_when_disconnected() -> None:
+async def test_device_boost_redirects_to_setup_when_disconnected() -> None:
     response = await device_boost(_ctx(StubService(NotConnected())), "did-1", 45)
 
-    assert response.headers["HX-Redirect"] == "/login"
+    assert response.headers["HX-Redirect"] == "/setup"
 
 
-async def test_device_vacation_redirects_to_login_when_disconnected() -> None:
+async def test_device_vacation_redirects_to_setup_when_disconnected() -> None:
     response = await device_vacation(
         _ctx(StubService(NotConnected())), "did-1", RETURNS_ON
     )
 
-    assert response.headers["HX-Redirect"] == "/login"
+    assert response.headers["HX-Redirect"] == "/setup"
 
 
 async def test_device_derog_delete_cancels() -> None:
@@ -163,7 +163,7 @@ async def test_device_rename_maps_errors(error: Exception, status: int) -> None:
     assert response.status_code == status
 
 
-async def test_device_rename_redirects_to_login_when_disconnected() -> None:
+async def test_device_rename_redirects_to_setup_when_disconnected() -> None:
     response = await device_rename(_ctx(StubService(NotConnected())), "did-1", "Salon")
 
-    assert response.headers["HX-Redirect"] == "/login"
+    assert response.headers["HX-Redirect"] == "/setup"

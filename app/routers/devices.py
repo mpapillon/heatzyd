@@ -70,7 +70,7 @@ async def device_order(
     try:
         await ctx.service.send_order(did, mode)
     except NotConnected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+        return Response(status_code=200, headers={"HX-Redirect": "/setup"})
     except DeviceNotFound:
         return Response(status_code=404)
     except DeviceNotSupported:
@@ -88,7 +88,7 @@ async def device_lock(ctx: AppContextDep, did: str, lock: Annotated[bool, Form()
     try:
         await ctx.service.send_lock(did, lock)
     except NotConnected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+        return Response(status_code=200, headers={"HX-Redirect": "/setup"})
     except DeviceNotFound:
         return Response(status_code=404)
     except DeviceNotSupported:
@@ -110,7 +110,7 @@ async def device_boost(
     try:
         await ctx.service.send_boost_derog(did, minutes)
     except NotConnected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+        return Response(status_code=200, headers={"HX-Redirect": "/setup"})
     except DeviceNotFound:
         return Response(status_code=404)
     except DeviceNotSupported:
@@ -132,7 +132,7 @@ async def device_vacation(
     try:
         await ctx.service.send_vacation_derog(did, ends_at)
     except NotConnected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+        return Response(status_code=200, headers={"HX-Redirect": "/setup"})
     except DeviceNotFound:
         return Response(status_code=404)
     except DeviceNotSupported:
@@ -150,7 +150,7 @@ async def device_derog_delete(ctx: AppContextDep, did: str):
     try:
         await ctx.service.cancel_derog(did)
     except NotConnected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+        return Response(status_code=200, headers={"HX-Redirect": "/setup"})
     except DeviceNotFound:
         return Response(status_code=404)
     except DeviceNotSupported:
@@ -175,7 +175,7 @@ async def device_rename(
     try:
         await ctx.service.rename(did, alias)
     except NotConnected:
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+        return Response(status_code=200, headers={"HX-Redirect": "/setup"})
     except DeviceNotFound:
         return Response(status_code=404)
     except DeviceNotSupported:

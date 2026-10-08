@@ -16,8 +16,7 @@ heatzyd is a self-hosted web app as an alternative to the official [Heatzy](http
  - List your devices,
  - Send an order: Comfort, Comfort -1, Comfort -2, Eco, Frost-free, Off,
  - Toggle the lock switch,
- - Realtime refresh,
- - Login / logout with your Heatzy account.
+ - Realtime refresh.
 
 ## Supported devices
 
@@ -44,12 +43,11 @@ uv sync
 uv run fastapi dev
 ```
 
-Then open http://127.0.0.1:8000, and log in with your Heatzy credentials.
+Then set your Heatzy credentials in `.env` (`HEATZYD_USERNAME` / `HEATZYD_PASSWORD`) and open http://127.0.0.1:8000.
 
 ## Notes
 
 heatzyd is single-user and should stay on a private network (VPN).
-The "login"is the Heatzy credential input, not an application account. Credentials are stored in clear text in the database for now.
 
 ## Use of AI
 

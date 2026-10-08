@@ -40,17 +40,6 @@ class HeatzyService:
     def is_connected(self) -> bool:
         return self._session.is_connected
 
-    @property
-    def auth_error(self) -> str | None:
-        return self._session.auth_error
-
-    @auth_error.setter
-    def auth_error(self, value: str | None) -> None:
-        self._session.auth_error = value
-
-    async def login(self, username: str, password: str) -> None:
-        await self._session.login(username, password)
-
     async def start(self) -> None:
         await self._session.start()
 

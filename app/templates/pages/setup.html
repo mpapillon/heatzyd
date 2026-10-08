@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration - heatzyd{% endblock %}
+
+{% block banner %}{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="text-body-secondary mb-2">{{ icon("alert", "icon-xxl") }}</div>
+    {% if variant == "missing_credentials" %}
+    <h1 class="h5">Configuration requise</h1>
+    <p class="text-body-secondary">
+      Les identifiants Heatzy sont absents.<br>
+      Renseignez les variables <code>HEATZYD_USERNAME</code> et <code>HEATZYD_PASSWORD</code>, puis redémarrez heatzyd.
+    </p>
+    {% elif variant == "lost_connection" %}
+    <h1 class="h5">Connexion perdue avec les serveurs Heatzy</h1>
+    <p class="text-body-secondary">La reconnexion a été abandonnée. Vérifiez l'accès réseau vers les serveurs Heatzy et vos identifiants dans <code>.env</code>, puis redémarrez heatzyd.</p>
+    {% else %}
+    <h1 class="h5">Connexion à Heatzy impossible</h1>
+    <p class="text-body-secondary">Vérifiez les identifiants et l'accès réseau vers les serveurs Heatzy, puis redémarrez heatzyd.</p>
+    {% endif %}
+</div>
+{% endblock %}

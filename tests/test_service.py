@@ -347,44 +347,43 @@ def test_on_device_changed_without_did_is_ignored(service: HeatzyService) -> Non
 # status delegation
 
 
-def test_default_status_is_logged_out(service: HeatzyService) -> None:
-    assert service.status == "logged_out"
+def test_default_status_is_failed(service: HeatzyService) -> None:
+    assert service.status == "failed"
 
 
-async def test_login_sets_connected_status(
+async def test_start_sets_connected_status(
     service: HeatzyService, fake: FakeHeatzypyClient
 ) -> None:
-    await service.login("user", "pass")
+    await service.start()
     try:
         assert service.status == "connected"
     finally:
         await service.stop()
 
 
-async def test_login_failure_falls_back_to_logged_out(
+async def test_start_failure_keeps_failed(
     service: HeatzyService, fake: FakeHeatzypyClient
 ) -> None:
     fake.websocket.connect_error = AuthenticationFailed("bad")
 
-    with pytest.raises(AuthenticationFailed):
-        await service.login("user", "pass")
+    await service.start()
 
-    assert service.status == "logged_out"
+    assert service.status == "failed"
 
 
-async def test_stop_sets_logged_out(
+async def test_stop_sets_failed(
     service: HeatzyService, fake: FakeHeatzypyClient
-) -> None:
-    await service.login("user", "pass")
-
-    await service.stop()
-
-    assert service.status == "logged_out"
-
-
-async def test_start_without_credentials_stays_logged_out(
-    service: HeatzyService,
 ) -> None:
     await service.start()
 
-    assert service.status == "logged_out"
+    await service.stop()
+
+    assert service.status == "failed"
+
+
+async def test_start_without_credentials_stays_failed(
+    service_without_credentials: HeatzyService,
+) -> None:
+    await service_without_credentials.start()
+
+    assert service_without_credentials.status == "failed"

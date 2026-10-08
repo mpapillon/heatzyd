@@ -10,14 +10,11 @@ from app.deps import AppContext
 from app.heatzy import HeatzyService
 from app.heatzy.events import EventEmitter
 from app.middlewares import IsConnectedMiddleware
-from app.models.db import init_db
-from app.routers import auth, devices, events_sse, pages, service
+from app.routers import devices, events_sse, pages, service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
-    init_db(settings.database_path)
-
     events = EventEmitter()
     service = HeatzyService(settings=settings, events=events)
     await service.start()
@@ -38,7 +35,6 @@ def create_app() -> FastAPI:
     app = FastAPI(title="heatzyd", lifespan=lifespan)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.add_middleware(IsConnectedMiddleware)
-    app.include_router(auth.router)
     app.include_router(devices.router)
     app.include_router(events_sse.router)
     app.include_router(pages.router)

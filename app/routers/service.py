@@ -12,8 +12,8 @@ async def service_banner(
     request: Request,
     ctx: AppContextDep,
 ):
-    if ctx.service.status == "logged_out":
-        return Response(status_code=200, headers={"HX-Redirect": "/login"})
+    if ctx.service.status in ("failed", "lost_connection"):
+        return Response(status_code=200, headers={"HX-Redirect": "/setup"})
 
     return templates.TemplateResponse(
         request,

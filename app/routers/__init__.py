@@ -1,1 +1,1 @@
-from app.routers import auth, devices, events_sse, pages  # noqa: F401
+from app.routers import devices, events_sse, pages  # noqa: F401

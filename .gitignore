@@ -15,3 +15,5 @@ wheels/
 docs/
 data/
 scripts/
+
+.env

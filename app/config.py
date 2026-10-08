@@ -8,7 +8,9 @@ class Settings(BaseSettings):
         env_file=".env", env_prefix="HEATZYD_", extra="ignore"
     )
 
-    database_path: str = "data/heatzyd.db"
+    username: str | None = None
+    password: str | None = None
+
     heatzy_region: str = "EU"
     use_tls: bool = True
     tz: ZoneInfo | None = None  # None = system

@@ -19,7 +19,6 @@ from heatzypy.exception import (
 from app.config import Settings
 from app.domain.control import backoff
 from app.heatzy.events import EventEmitter
-from app.models import credentials, db
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,9 @@ _TRANSIENT_ERRORS = (
 
 _RECONNECT_ERRORS = (*_TRANSIENT_ERRORS, AuthenticationFailed)
 
-type Status = Literal["logged_out", "connecting", "connected", "reconnecting"]
+type Status = Literal[
+    "failed", "lost_connection", "connecting", "connected", "reconnecting"
+]
 
 
 class ConnectionSupervisor:
@@ -45,14 +46,15 @@ class ConnectionSupervisor:
         events: EventEmitter,
         on_device_changed: Callable[[dict[str, Any]], None],
     ) -> None:
-        self.auth_error: str | None = None
-        self.status: Status = "logged_out"
+        self.status: Status = "failed"
 
         self._events = events
         self._on_device_changed = on_device_changed
 
         self._region = settings.heatzy_region
         self._use_tls = settings.use_tls
+        self._username = settings.username
+        self._password = settings.password
         self._retry_backoff_base = settings.retry_backoff_base
         self._retry_backoff_cap = settings.retry_backoff_cap
         self._retry_max_attempts = settings.retry_max_attempts
@@ -72,14 +74,37 @@ class ConnectionSupervisor:
 
     # Lifecycle
 
-    async def login(self, username: str, password: str) -> None:
+    async def start(self) -> None:
+        if self._client is not None:
+            logger.warning("already started")
+            return
+
+        try:
+            await self._login()
+        except AuthenticationFailed as error:
+            await self._handle_auth_failure()
+            logger.warning("Heatzy authentication failed: %s", error)
+        except HeatzyException as error:
+            logger.error("Heatzy authentication was interrupted: %s", str(error))
+        except Exception:
+            logger.exception("Heatzy startup failed")
+
+    async def stop(self) -> None:
+        self._stopping = True
+        self._set_status("failed")
+        await self._teardown()
+
+    async def _login(self) -> None:
+        if self._username is None or self._password is None:
+            return
+
         await self._teardown()
         self._stopping = False
         self._set_status("connecting")
 
         self._client = HeatzyClient(
-            username,
-            password,
+            self._username,
+            self._password,
             session=ClientSession(),
             region=self._region,
             use_tls=self._use_tls,
@@ -93,31 +118,8 @@ class ConnectionSupervisor:
             self._listen_task.add_done_callback(self._on_listen_task_end)
         except Exception:
             await self._teardown()
-            self._set_status("logged_out")
+            self._set_status("failed")
             raise
-        self.auth_error = None
-
-    async def start(self) -> None:
-        if self._client is not None:
-            logger.warning("already started")
-            return
-
-        with db.session_scope() as session:
-            creds = credentials.load(session)
-        if creds is None or not creds.connected:
-            return
-        try:
-            await self.login(creds.username, creds.password)
-        except AuthenticationFailed as error:
-            await self._handle_auth_failure()
-            logger.warning("Heatzy authentication failed: %s", error)
-        except HeatzyException as error:
-            logger.error("Heatzy authentication was interrupted: %s", str(error))
-
-    async def stop(self) -> None:
-        self._stopping = True
-        self._set_status("logged_out")
-        await self._teardown()
 
     # Supervision
 
@@ -147,8 +149,7 @@ class ConnectionSupervisor:
         self._connection_attempts += 1
         if self._connection_attempts > self._retry_max_attempts:
             logger.error("giving up on websocket: %s", error)
-            self.auth_error = "La connexion aux serveurs Heatzy a été perdue."
-            self._set_status("logged_out")
+            self._set_status("lost_connection")
             await self._close_client()
             return False
 
@@ -186,11 +187,8 @@ class ConnectionSupervisor:
         return True
 
     async def _handle_auth_failure(self) -> None:
-        self._set_status("logged_out")
+        self._set_status("failed")
         await self._close_client()
-        self.auth_error = "Identifiants Heatzy invalides"
-        with db.session_scope() as session:
-            credentials.mark_disconnected(session)
 
     async def _teardown(self) -> None:
         if self._listen_task is not None:

@@ -27,6 +27,19 @@ def dashboard_page(request: Request, ctx: AppContextDep):
     )
 
 
+@router.get("/setup", response_class=HTMLResponse)
+def setup_page(request: Request, ctx: AppContextDep):
+    if ctx.settings.username is None or ctx.settings.password is None:
+        variant = "missing_credentials"
+    elif ctx.service.status == "lost_connection":
+        variant = "lost_connection"
+    else:
+        variant = "connection_failed"
+    return templates.TemplateResponse(
+        request, "pages/setup.html", {"variant": variant}
+    )
+
+
 @router.get("/devices/{did}", response_class=HTMLResponse)
 def device_page(request: Request, ctx: AppContextDep, did: str):
     device = ctx.service.get_device(did)
